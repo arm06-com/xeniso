@@ -50,7 +50,7 @@ export default function SealMaker() {
   const [
     centerFontSize,
     setCenterFontSize,
-  ] = useState(26);
+  ] = useState(20);
 
   const [
     bottomFontSize,
@@ -468,7 +468,7 @@ export default function SealMaker() {
                         : "hover:bg-gray-50"
                     }`}
                     >
-                    <div className="text-2xl mb-2">
+                    <div className="text-2xl sm:text-3xl mb-2">
                         ✏️
                     </div>
 
@@ -487,14 +487,14 @@ export default function SealMaker() {
                         onClick={() =>
                             applyTemplate(item.id)
                         }
-                        className={`border rounded-xl p2 sm:p-4 text-center transition ${
+                        className={`border text-black rounded-xl p2 sm:p-4 text-center transition ${
                             template === item.id
                             ? "border-black bg-gray-100"
                             : "hover:bg-gray-50"
                         }`}
                         >
                         <Icon
-                            size={32}
+                            size={26}
                             color={item.color}
                             className="mx-auto mb-2"
                         />
@@ -524,7 +524,7 @@ export default function SealMaker() {
                         | "oval"
                     )
                     }
-                    className="w-full border rounded-lg px-4 py-3"
+                    className="w-full border rounded-lg px-4 py-3 text-gray-800"
                 >
                     <option value="circle">
                     Circular
@@ -592,7 +592,7 @@ export default function SealMaker() {
                     e.target.value
                     )
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-3 text-gray-800"
                 placeholder="Organization Name"
                 />
             </div>
@@ -629,14 +629,14 @@ export default function SealMaker() {
                     e.target.value
                     )
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-3 text-gray-800"
                 placeholder="OFFICIAL"
                 />
             </div>
 
             {/* Font Size */}
             <div className="mt-3">
-                <label className="block text-sm mb-2">
+                <label className="block text-sm mb-2 text-gray-800">
                     Font Size: {centerFontSize}px
                 </label>
 
@@ -667,7 +667,7 @@ export default function SealMaker() {
                     e.target.value
                     )
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-3 text-gray-800"
                 placeholder="Bottom Text"
                 />
             </div>
@@ -964,7 +964,7 @@ export default function SealMaker() {
                             e.target.value as any
                         )
                         }
-                        className="w-full border rounded-lg px-4 py-3"
+                        className="w-full border rounded-lg px-4 py-3 text-gray-800"
                     >
                         <option value="png">
                         PNG (Transparent)
@@ -1103,7 +1103,7 @@ export default function SealMaker() {
 
                 {/* Font Selection */}
                 <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                         Font
                     </label>
 
@@ -1114,7 +1114,7 @@ export default function SealMaker() {
                             e.target.value
                         )
                         }
-                        className="w-full border rounded-lg px-4 py-3"
+                        className="w-full border rounded-lg px-4 py-3 text-gray-800"
                     >
                         <option>Arial</option>
                         <option>Georgia</option>
@@ -1134,12 +1134,12 @@ export default function SealMaker() {
                         type="file"
                         accept="image/*"
                         onChange={handleLogoUpload}
-                        className="w-full border rounded-lg px-4 py-3"
+                        className="w-full border rounded-lg px-4 py-3 text-gray-800"
                     />
                 </div>
                 {/* Star Size */}
                 <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                         Star Size ({starSize}px)
                     </label>
 
