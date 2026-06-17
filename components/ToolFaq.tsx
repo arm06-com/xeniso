@@ -25,7 +25,7 @@ export default function ToolFaq({
               {item.question}
             </h3>
 
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-700 mt-1">
               {item.answer}
             </p>
           </div>
