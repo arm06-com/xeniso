@@ -201,7 +201,7 @@ return (
             : "border-gray-300 hover:bg-gray-50"
         }`}
       >
-        <h2 className="text-2xl font-semibold">
+        <h2 className="text-2xl font-semibold text-black">
           Drag & Drop PDF
         </h2>
 
@@ -237,14 +237,14 @@ return (
     {file && (
         <section className="bg-white border rounded-2xl p-8 shadow-md">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-6 text-black">
             PDF Information
             </h2>
 
             <div className="space-y-4">
 
             <div>
-                <span className="font-semibold">
+                <span className="font-semibold text-black">
                 File Name:
                 </span>
 
@@ -254,7 +254,7 @@ return (
             </div>
 
             <div>
-                <span className="font-semibold">
+                <span className="font-semibold text-black">
                 File Size:
                 </span>
 
@@ -272,13 +272,13 @@ return (
     {file && (
         <section className="bg-white border rounded-2xl p-8 shadow-md">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-6 text-black">
             Compression Settings
             </h2>
 
             <div>
 
-            <label className="block font-medium mb-2">
+            <label className="block font-medium mb-2 text-black">
                 Compression Level
             </label>
 
@@ -348,14 +348,14 @@ return (
     {downloadUrl && (
         <section className="bg-white border rounded-2xl p-8 shadow-md">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-6 text-black">
             Optimization Results
             </h2>
 
             <div className="space-y-4">
 
             <div>
-                <span className="font-semibold">
+                <span className="font-semibold text-black">
                 Original Size:
                 </span>
 
@@ -365,7 +365,7 @@ return (
             </div>
 
             <div>
-                <span className="font-semibold">
+                <span className="font-semibold text-black">
                 Optimized Size:
                 </span>
 
@@ -381,7 +381,7 @@ return (
             </div>
 
             <div>
-                <span className="font-semibold">
+                <span className="font-semibold text-black">
                 Saved:
                 </span>
 
@@ -404,7 +404,7 @@ return (
 
     <section className="bg-gray-50 border rounded-2xl p-6">
 
-        <h3 className="font-semibold">
+        <h3 className="font-semibold text-black">
             Privacy First
         </h3>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   FaFacebookF,
   FaGithub,
@@ -26,7 +27,13 @@ export default function Footer() {
               href="/"
               className="text-3xl font-bold text-white"
             >
-              Xeniso
+              <Image
+                  src="/xeniso-white-logo.png"
+                  alt="Xeniso Logo"
+                  width={130}
+                  height={40}
+                  priority
+                />
             </Link>
 
             <p className="mt-4 text-gray-400 leading-relaxed max-w-md">

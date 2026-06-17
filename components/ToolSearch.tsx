@@ -45,7 +45,7 @@ export default function ToolSearch() {
       </div>
 
       {filteredTools.length > 0 && (
-        <div className="absolute z-50 mt-2 w-full bg-white border rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute z-50 mt-2 w-full text-gray-500 bg-white border rounded-xl shadow-lg overflow-hidden">
 
           {filteredTools.map((tool) => (
             <Link

@@ -267,7 +267,7 @@ return (
                 : "border-gray-300 hover:bg-gray-50"
             }`}
         >
-            <h2 className="text-2xl font-semibold">
+            <h2 className="text-2xl font-semibold text-black">
             Drag & Drop PDF
             </h2>
 
@@ -295,13 +295,13 @@ return (
     {/* Show Split Information */}
     {file && (
     <section className="bg-white border rounded-2xl p-8 shadow-md">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-bold mb-6 text-black">
         PDF Information
         </h2>
 
         <div className="space-y-4">
         <div>
-            <span className="font-semibold">
+            <span className="font-semibold text-black">
             File Name:
             </span>
 
@@ -311,7 +311,7 @@ return (
         </div>
 
         <div>
-            <span className="font-semibold">
+            <span className="font-semibold text-black">
             File Size:
             </span>
 
@@ -321,7 +321,7 @@ return (
         </div>
 
         <div>
-            <span className="font-semibold">
+            <span className="font-semibold text-black">
             Total Pages:
             </span>
 
@@ -338,14 +338,14 @@ return (
     {file && (
     <>
         <section className="bg-white border rounded-2xl p-8 shadow-md">
-          <h2 className="text-2xl font-bold mb-6">
+          <h2 className="text-2xl font-bold mb-6 text-black">
           Split Settings
           </h2>
 
           <div className="space-y-6">
 
           <div>
-            <label className="block font-medium mb-2">
+            <label className="block font-medium mb-2 text-black">
               Split Mode
             </label>
 
@@ -419,7 +419,7 @@ return (
       {downloadUrl && (
         <section className="bg-white border rounded-2xl p-8 shadow-md">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-6 text-black">
             Split Completed
             </h2>
 

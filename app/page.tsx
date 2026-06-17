@@ -52,7 +52,7 @@ export default function HomePage() {
       <section className="bg-linear-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-6 py-24 text-center">
 
-          <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+          <h1 className="text-4xl md:text-6xl sm:text-5x1 font-bold leading-tight text-black">
             Free Online PDF & Image Tools
           </h1>
 
@@ -76,7 +76,7 @@ export default function HomePage() {
 
             <Link
               href="/categories"
-              className="border border-gray-300 px-8 py-4 rounded-xl font-medium hover:bg-gray-50 transition"
+              className="text-black border border-gray-300 px-8 py-4 rounded-xl font-medium hover:bg-gray-50 transition"
             >
               View Categories
             </Link>
@@ -107,7 +107,7 @@ export default function HomePage() {
             Popular Tools
           </h2>
 
-          <p className="mt-4 text-gray-600">
+          <p className="mt-4 text-gray-400">
             Everything you need to work with PDFs and images.
           </p>
 
@@ -121,11 +121,11 @@ export default function HomePage() {
               href={tool.href}
               className="border rounded-2xl p-8 hover:shadow-lg transition bg-white"
             >
-              <h3 className="text-xl font-semibold">
+              <h3 className="text-black text-xl font-semibold">
                 {tool.title}
               </h3>
 
-              <p className="mt-3 text-gray-600">
+              <p className="mt-3 text-gray-700">
                 {tool.description}
               </p>
 
@@ -147,7 +147,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
 
             <div>
-              <h3 className="text-4xl font-bold">
+              <h3 className="text-black text-4xl font-bold">
                 7+
               </h3>
 
@@ -157,7 +157,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className="text-4xl font-bold">
+              <h3 className="text-black text-4xl font-bold">
                 100%
               </h3>
 
@@ -167,7 +167,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className="text-4xl font-bold">
+              <h3 className="text-black text-4xl font-bold">
                 0
               </h3>
 
@@ -177,7 +177,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className="text-4xl font-bold">
+              <h3 className="text-black text-4xl font-bold">
                 ∞
               </h3>
 
@@ -200,7 +200,7 @@ export default function HomePage() {
             Why Choose Xeniso?
           </h2>
 
-          <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
             We focus on speed, privacy and simplicity,
             helping you complete everyday tasks without
             unnecessary complexity.
@@ -215,7 +215,7 @@ export default function HomePage() {
               Privacy First
             </h3>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-400">
               Your files are processed locally whenever
               possible and never stored permanently.
             </p>
@@ -226,7 +226,7 @@ export default function HomePage() {
               Completely Free
             </h3>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-400">
               Use our tools without subscriptions or
               hidden charges.
             </p>
@@ -237,7 +237,7 @@ export default function HomePage() {
               Fast Processing
             </h3>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-400">
               Convert and optimize files in seconds
               directly from your browser.
             </p>
@@ -248,7 +248,7 @@ export default function HomePage() {
               Easy to Use
             </h3>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-400">
               Clean interfaces designed for everyone,
               from students to professionals.
             </p>
@@ -293,11 +293,11 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-6 py-20">
 
         <div className="text-center">
-          <h2 className="text-4xl font-bold">
+          <h2 className="text-3xl font-bold">
             How Xeniso Works
           </h2>
 
-          <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
             Complete your tasks in three simple steps.
           </p>
         </div>
@@ -305,7 +305,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 mt-14">
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-black text-white flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center mx-auto text-xl font-bold">
               1
             </div>
 
@@ -313,13 +313,13 @@ export default function HomePage() {
               Upload
             </h3>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-400">
               Select or drag and drop your files into the tool.
             </p>
           </div>
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-black text-white flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center mx-auto text-xl font-bold">
               2
             </div>
 
@@ -327,13 +327,13 @@ export default function HomePage() {
               Process
             </h3>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-400">
               Compress, convert, resize or edit instantly.
             </p>
           </div>
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-black text-white flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center mx-auto text-xl font-bold">
               3
             </div>
 
@@ -341,7 +341,7 @@ export default function HomePage() {
               Download
             </h3>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-400">
               Save your processed files securely to your device.
             </p>
           </div>
@@ -356,7 +356,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
 
           <div className="text-center">
-            <h2 className="text-4xl font-bold">
+            <h2 className="text-3xl font-bold text-black">
               Browse by Category
             </h2>
 
@@ -369,7 +369,7 @@ export default function HomePage() {
 
             <div className="bg-white border rounded-2xl p-8 text-center">
 
-              <h3 className="text-2xl font-semibold">
+              <h3 className="text-2xl font-semibold text-black">
                 PDF Tools
               </h3>
 
@@ -381,7 +381,7 @@ export default function HomePage() {
 
             <div className="bg-white border rounded-2xl p-8 text-center">
 
-              <h3 className="text-2xl font-semibold">
+              <h3 className="text-2xl font-semibold text-black">
                 Image Tools
               </h3>
 
@@ -393,7 +393,7 @@ export default function HomePage() {
 
             <div className="bg-white border rounded-2xl p-8 text-center">
 
-              <h3 className="text-2xl font-semibold">
+              <h3 className="text-2xl font-semibold text-black">
                 Utility Tools
               </h3>
 
@@ -414,7 +414,7 @@ export default function HomePage() {
 
         <div className="text-center">
 
-          <h2 className="text-4xl font-bold">
+          <h2 className="text-3xl font-bold">
             Frequently Asked Questions
           </h2>
 
@@ -427,7 +427,7 @@ export default function HomePage() {
               Is Xeniso free to use?
             </h3>
 
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-400">
               Yes. All current tools are available completely free.
             </p>
           </div>
@@ -437,7 +437,7 @@ export default function HomePage() {
               Do I need to create an account?
             </h3>
 
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-400">
               No registration is required to use Xeniso tools.
             </p>
           </div>
@@ -447,7 +447,7 @@ export default function HomePage() {
               Are my files secure?
             </h3>
 
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-400">
               Most processing happens locally in your browser and files are not permanently stored.
             </p>
           </div>
@@ -457,7 +457,7 @@ export default function HomePage() {
               Which file formats are supported?
             </h3>
 
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-gray-400">
               Xeniso currently supports PDF, JPG, PNG and WebP formats.
             </p>
           </div>

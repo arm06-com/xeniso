@@ -270,7 +270,7 @@ return (
             : "border-gray-300 hover:bg-gray-50"
         }`}
       >
-        <h2 className="text-2xl font-semibold">
+        <h2 className="text-2xl font-semibold text-black">
           Drag & Drop Images
         </h2>
 
@@ -304,7 +304,7 @@ return (
     {previews.length > 0 && (
       <section className="bg-white border rounded-2xl p-8 shadow-md">
 
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-bold mb-6 text-black">
           Selected Images
         </h2>
 
@@ -343,14 +343,14 @@ return (
 
     {/* Settings Section */}
     <section className="bg-white border rounded-2xl p-8 shadow-md">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-bold mb-6 text-black">
             PDF Settings
         </h2>
 
         <div className="grid md:grid-cols-2 gap-6">
 
             <div>
-            <label className="block font-medium mb-2">
+            <label className="block font-medium mb-2 text-black">
                 Page Size
             </label>
 
@@ -371,7 +371,7 @@ return (
             </div>
 
             <div>
-            <label className="block font-medium mb-2">
+            <label className="block font-medium mb-2 text-black">
                 Orientation
             </label>
 
@@ -416,7 +416,7 @@ return (
             </div>
 
             <div>
-            <label className="block font-medium mb-2">
+            <label className="block font-medium mb-2 text-black">
                 Image Quality ({quality}%)
             </label>
 

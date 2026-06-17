@@ -323,7 +323,7 @@ export default function BackgroundRemover() {
               : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold text-black">
             Drag & Drop Your Image
           </h2>
 
@@ -359,7 +359,7 @@ export default function BackgroundRemover() {
 
             {/* Preview */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">
+              <h2 className="text-2xl font-bold mb-6 text-black">
                 Original Image
               </h2>
 
@@ -374,7 +374,7 @@ export default function BackgroundRemover() {
             <div className="space-y-6">
 
               <div>
-                <span className="font-semibold">
+                <span className="font-semibold text-black">
                   File Name:
                 </span>
 
@@ -384,7 +384,7 @@ export default function BackgroundRemover() {
               </div>
 
               <div>
-                <span className="font-semibold">
+                <span className="font-semibold text-black">
                   File Size:
                 </span>
 
@@ -438,7 +438,7 @@ export default function BackgroundRemover() {
         {resultPreview && preview && (
             <section className="bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
 
-                <h2 className="text-2xl font-bold mb-6">
+                <h2 className="text-2xl font-bold mb-6 text-black">
                 Compare Results
                 </h2>
 
@@ -528,7 +528,7 @@ export default function BackgroundRemover() {
                   )}
                   {/* Right Column */}
                   <div className="mt-6 space-y-6">
-                    <label className="block font-medium mb-3">
+                    <label className="block font-medium mb-3 text-black">
                       Background
                     </label>
 
@@ -609,7 +609,7 @@ export default function BackgroundRemover() {
 
                     {activeTab === "crop" && (
                     <>
-                      <label className="block font-medium">
+                      <label className="block font-medium text-black">
                         Crop Ratio
                       </label>
 
@@ -695,7 +695,7 @@ export default function BackgroundRemover() {
                     Result
                     </p>
 
-                    <p className="font-semibold">
+                    <p className="font-semibold ">
                     Transparent PNG
                     </p>
                 </div>

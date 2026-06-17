@@ -341,7 +341,7 @@ export default function ImageResizer() {
               : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold text-black">
             Drag & Drop Image to Resize
           </h2>
 
@@ -373,14 +373,14 @@ export default function ImageResizer() {
       {/* Resize Settings */}
       {preview && (
         <section className="bg-white border rounded-2xl p-8 shadow-md">
-          <h2 className="text-2xl font-bold mb-6">
+          <h2 className="text-2xl font-bold mb-6 text-black">
             Resize Settings
           </h2>
 
           <div className="grid md:grid-cols-2 gap-6">
 
             <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                     Preset
                 </label>
 
@@ -409,7 +409,7 @@ export default function ImageResizer() {
             </div>
 
             <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                     Resize Percentage
                 </label>
 
@@ -432,7 +432,7 @@ export default function ImageResizer() {
             </div>
 
             <div className="flex items-end">
-              <label className="flex items-center gap-3">
+              <label className="flex items-center gap-3 text-black">
                 <input
                   type="checkbox"
                   checked={maintainAspectRatio}
@@ -448,7 +448,7 @@ export default function ImageResizer() {
             </div>
 
             <div>
-              <label className="block font-medium mb-2">
+              <label className="block font-medium mb-2 text-black">
                 Width (px)
               </label>
 
@@ -466,7 +466,7 @@ export default function ImageResizer() {
             </div>
 
             <div>
-              <label className="block font-medium mb-2">
+              <label className="block font-medium mb-2 text-black">
                 Height (px)
               </label>
 
@@ -484,7 +484,7 @@ export default function ImageResizer() {
             </div>
 
             <div className="md:col-span-2">
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                     Output Quality: {quality}%
                 </label>
 
@@ -539,7 +539,7 @@ export default function ImageResizer() {
       {/* Original Information */}
       {preview && file && (
         <section className="bg-white border rounded-2xl p-8 shadow-md">
-          <h2 className="text-2xl font-bold mb-6">
+          <h2 className="text-2xl font-bold mb-6 text-black">
             Original Image
           </h2>
 
@@ -577,7 +577,7 @@ export default function ImageResizer() {
       {/* Resized Preview */}
       {resizedPreview && file && (
         <section className="bg-white border rounded-2xl p-8 shadow-md">
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-6 text-black">
             Resized Image
             </h2>
 

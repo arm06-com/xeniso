@@ -314,7 +314,7 @@ export default function ImageConverter({
               : "border-gray-300 hover:bg-gray-50"
           }`}
           >
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold text-black">
             Drag & Drop Your Image
           </h2>
 
@@ -351,7 +351,7 @@ export default function ImageConverter({
 
             {/* LEFT COLUMN - ORIGINAL IMAGE */}
             <div>
-                <h2 className="text-2xl font-bold mb-6">
+                <h2 className="text-2xl font-bold mb-6 text-black">
                 Original Image
                 </h2>
 
@@ -363,7 +363,7 @@ export default function ImageConverter({
 
                 <div className="space-y-4 mt-6">
                 <div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-black">
                     Source Format:
                     </span>
 
@@ -373,7 +373,7 @@ export default function ImageConverter({
                 </div>
 
                 <div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-black">
                     File Name:
                     </span>
 
@@ -383,7 +383,7 @@ export default function ImageConverter({
                 </div>
 
                 <div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-black">
                     File Size:
                     </span>
 
@@ -393,7 +393,7 @@ export default function ImageConverter({
                 </div>
 
                 <div>
-                    <label className="block font-semibold mb-2">
+                    <label className="block font-semibold mb-2 text-black">
                     Convert To
                     </label>
 
@@ -480,7 +480,7 @@ export default function ImageConverter({
 
             {/* RIGHT COLUMN - CONVERTED IMAGE */}
             <div>
-                <h2 className="text-2xl font-bold mb-6">
+                <h2 className="text-2xl font-bold mb-6 text-black">
                 Converted Image
                 </h2>
 
@@ -498,7 +498,7 @@ export default function ImageConverter({
 
                 <div className="space-y-4 mt-6">
                 <div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-black">
                     Output Format:
                     </span>
 
@@ -510,7 +510,7 @@ export default function ImageConverter({
                 </div>
 
                 <div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-black">
                     File Name:
                     </span>
 
@@ -520,7 +520,7 @@ export default function ImageConverter({
                 </div>
 
                 <div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-black">
                     File Size:
                     </span>
 

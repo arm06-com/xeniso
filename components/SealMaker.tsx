@@ -439,12 +439,12 @@ export default function SealMaker() {
       <section className="bg-white border rounded-2xl p-8 shadow-md">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="border border-dotted border-gray-400 p-2">
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-6 text-black">
                 Seal Details
             </h2>
 
             <div>
-                <label className="block font-medium mb-4">
+                <label className="block font-medium mb-4 text-black">
                     Ready-made Templates
                 </label>
 
@@ -466,7 +466,7 @@ export default function SealMaker() {
                         ✏️
                     </div>
 
-                    <p className="font-medium">
+                    <p className="font-medium text-black">
                         Custom
                     </p>
                     </button>
@@ -505,7 +505,7 @@ export default function SealMaker() {
 
             {/* Seal Oval Shape */}
             <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                     Seal Shape
                 </label>
 
@@ -534,7 +534,7 @@ export default function SealMaker() {
             <div className="space-y-4">
 
                 <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                     Oval Width ({ovalWidth})
                 </label>
 
@@ -553,7 +553,7 @@ export default function SealMaker() {
                 </div>
 
                 <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                     Oval Height ({ovalHeight})
                 </label>
 
@@ -574,7 +574,7 @@ export default function SealMaker() {
             </div>
             )}
             <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                 Organization Name
                 </label>
 
@@ -592,7 +592,7 @@ export default function SealMaker() {
             </div>
             {/* Font Size */}
             <div className="mt-3">
-                <label className="block text-sm mb-2">
+                <label className="block text-sm mb-2 text-black">
                     Font Size: {topFontSize}px
                 </label>
 
@@ -611,7 +611,7 @@ export default function SealMaker() {
             </div>
 
             <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                 Center Text
                 </label>
 
@@ -649,7 +649,7 @@ export default function SealMaker() {
             </div>
 
             <div>
-                <label className="block font-medium mb-2">
+                <label className="block font-medium mb-2 text-black">
                 Bottom Text
                 </label>
 
@@ -668,7 +668,7 @@ export default function SealMaker() {
 
             {/* Font Size */}
             <div className="mt-3">
-                <label className="block text-sm mb-2">
+                <label className="block text-sm mb-2 text-black">
                     Font Size: {bottomFontSize}px
                 </label>
 
@@ -690,7 +690,7 @@ export default function SealMaker() {
 
             {/* Preview */}
             <div className="border border-gray-400 border-dotted p-2">
-                <h2 className="text-2xl font-bold mb-6 text-left">
+                <h2 className="text-2xl font-bold mb-6 text-left text-black">
                     Seal Preview
                 </h2>
 
@@ -941,7 +941,7 @@ export default function SealMaker() {
                 </div>
                 
                 <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                         Download Format
                     </label>
 
@@ -983,7 +983,7 @@ export default function SealMaker() {
                 </button>
 
                 <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                         Seal Color
                     </label>
 
@@ -1033,7 +1033,7 @@ export default function SealMaker() {
                 {/* Seal Size */}
 
                 <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                         Seal Size ({sealSize}px)
                     </label>
 
@@ -1054,7 +1054,7 @@ export default function SealMaker() {
                 {/* Border Thikness */}
 
                 <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                         Border Thickness ({borderWidth}px)
                     </label>
 
@@ -1114,7 +1114,7 @@ export default function SealMaker() {
 
                 {/* Logo Upload */}
                 <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                         Center Logo (Optional)
                     </label>
 
@@ -1152,7 +1152,7 @@ export default function SealMaker() {
       {/* Privacy */}
       <section className="bg-gray-50 border rounded-2xl p-6">
 
-        <h3 className="font-semibold">
+        <h3 className="font-semibold text-black">
           Privacy First
         </h3>
 

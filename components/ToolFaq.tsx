@@ -21,7 +21,7 @@ export default function ToolFaq({
       <div className="mt-6 space-y-6">
         {items.map((item, index) => (
           <div key={index}>
-            <h3 className="font-semibold">
+            <h3 className="font-semibold text-black">
               {item.question}
             </h3>
 

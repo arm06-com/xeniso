@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
 import ToolSearch from "@/components/ToolSearch";
@@ -107,11 +108,14 @@ export default function Header() {
         <div className="h-16 flex items-center justify-between">
 
           {/* Logo */}
-          <Link
-            href="/"
-            className="text-2xl font-bold"
-          >
-            Xeniso
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/xeniso-logo.png"
+              alt="Xeniso Logo"
+              width={130}
+              height={40}
+              priority
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -119,10 +123,10 @@ export default function Header() {
 
             <Link
               href="/"
-              className={`hover:text-black ${
+              className={`hover:text-sky-900 ${
                 pathname === "/"
                   ? "font-semibold text-black"
-                  : "text-gray-600"
+                  : "text-gray-900"
               }`}
             >
               Home
@@ -137,7 +141,7 @@ export default function Header() {
 
                     setToolsOpen(!toolsOpen);
                 }}
-                className="flex items-center gap-1 text-gray-600 hover:text-black"
+                className="flex items-center gap-1 text-gray-900 hover:text-sky-900"
               >
                 Tools
 
@@ -169,11 +173,11 @@ export default function Header() {
 
             <Link
               href="/categories"
-              className={`hover:text-black ${
+              className={`hover:text-sky-900 ${
                 pathname ===
                 "/categories"
                   ? "font-semibold text-black"
-                  : "text-gray-600"
+                  : "text-gray-900"
               }`}
             >
               Categories
@@ -181,10 +185,10 @@ export default function Header() {
 
             <Link
               href="/about"
-              className={`hover:text-black ${
+              className={`hover:text-sky-900 ${
                 pathname === "/about"
                   ? "font-semibold text-black"
-                  : "text-gray-600"
+                  : "text-gray-900"
               }`}
             >
               About
@@ -192,10 +196,10 @@ export default function Header() {
             
             <Link
               href="/contact"
-              className={`hover:text-black ${
+              className={`hover:text-sky-900 ${
                 pathname === "/contact"
                   ? "font-semibold text-black"
-                  : "text-gray-600"
+                  : "text-gray-900"
               }`}
             >
               Contact
