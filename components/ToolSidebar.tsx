@@ -8,59 +8,59 @@ export default function ToolSidebar() {
 
         {/* Related Tools */}
         <div className="bg-white border rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold mb-4">
+          <h2 className="text-lg font-bold mb-4 text-black">
             Related Tools
           </h2>
 
           <div className="space-y-3">
             <Link
               href="/tools/pdf-compressor"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               PDF Compressor
             </Link>
             <Link
               href="/tools/pdf-splitter"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               PDF Splitter 
             </Link>
             <Link
               href="/tools/image-compressor"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               Image Compressor
             </Link>
 
             <Link
               href="/tools/image-converter"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               Image Converter
             </Link>
 
             <Link
               href="/tools/image-resizer"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               Image Resizer
             </Link>
 
             <Link
               href="/tools/qr-generator"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               QR Code Generator
             </Link>
             <Link
               href="/tools/background-remover"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               Background Remover
             </Link>
             <Link
               href="/tools/seal-maker"
-              className="block border rounded-xl p-4 hover:shadow-md transition"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
               Seal Maker
             </Link>
@@ -77,7 +77,7 @@ export default function ToolSidebar() {
 
         {/* CTA / More Tools */}
         <div className="bg-white border rounded-2xl p-6 shadow-sm">
-          <h3 className="font-semibold text-lg">
+          <h3 className="font-semibold text-lg text-black">
             More Free Tools
           </h3>
 
@@ -89,7 +89,7 @@ export default function ToolSidebar() {
 
           <Link
             href="/"
-            className="inline-block mt-4 text-sm font-medium hover:underline"
+            className="inline-block mt-4 text-sm font-medium hover:underline text-black"
           >
             Explore All Tools →
           </Link>

@@ -84,7 +84,7 @@ export default function ImageCompressorPage() {
           className="border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer hover:bg-gray-50 transition"
           onClick={() => fileInputRef.current?.click()}
         >
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold text-black">
             Drag & Drop Your Image
           </h2>
 
@@ -114,14 +114,14 @@ export default function ImageCompressorPage() {
       {selectedFile && (
         <section className="bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
           {isCompressing ? (
-            <p className="text-center text-lg">
+            <p className="text-center text-lg text-black">
               Compressing image...
             </p>
           ) : (
             <>
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="font-semibold mb-4">
+                  <h3 className="font-semibold mb-4 text-black">
                     Original
                   </h3>
 
@@ -137,7 +137,7 @@ export default function ImageCompressorPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-4">
+                  <h3 className="font-semibold mb-4 text-black">
                     Compressed
                   </h3>
 
@@ -172,11 +172,11 @@ export default function ImageCompressorPage() {
 
       {/* How To Use */}
       <section>
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-2xl font-bold text-black">
           How to Use
         </h2>
 
-        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-700">
+        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-400">
           <li>Drag and drop your image.</li>
           <li>Wait a few seconds.</li>
           <li>Review the compressed result.</li>

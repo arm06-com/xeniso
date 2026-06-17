@@ -39,7 +39,7 @@ export default function ToolSearch() {
           onChange={(e) =>
             setQuery(e.target.value)
           }
-          className="w-full border rounded-xl pl-11 pr-4 py-3"
+          className="w-full border rounded-xl pl-11 pr-4 py-3 text-gray-600"
         />
 
       </div>

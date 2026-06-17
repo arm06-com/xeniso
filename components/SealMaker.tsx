@@ -94,7 +94,13 @@ export default function SealMaker() {
         "webp"
   >("png");
   const svgRef =
-  useRef<SVGSVGElement>(null);
+   useRef<SVGSVGElement>(null);
+
+  const displaySize =
+    typeof window !== "undefined" && window.innerWidth < 640
+        ? Math.min(sealSize, 280)
+        : sealSize;
+    
 
   const downloadSeal = async () => {
     if (!svgRef.current) return;
@@ -436,8 +442,8 @@ export default function SealMaker() {
     <div className="space-y-8">
 
       {/* Editor */}
-      <section className="bg-white border rounded-2xl p-8 shadow-md">
-        <div className="grid md:grid-cols-2 gap-6">
+      <section className="bg-white border rounded-2xl p-4 md:p-8 shadow-md">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8">
           <div className="border border-dotted border-gray-400 p-2">
             <h2 className="text-2xl font-bold mb-6 text-black">
                 Seal Details
@@ -448,7 +454,7 @@ export default function SealMaker() {
                     Ready-made Templates
                 </label>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
 
                     {/* Custom */}
                     <button
@@ -456,7 +462,7 @@ export default function SealMaker() {
                     onClick={() => {
                         setTemplate("custom");
                     }}
-                    className={`border rounded-xl p-4 text-center transition ${
+                    className={`border rounded-xl p2 sm:p-4 text-center transition ${
                         template === "custom"
                         ? "border-black bg-gray-100"
                         : "hover:bg-gray-50"
@@ -481,7 +487,7 @@ export default function SealMaker() {
                         onClick={() =>
                             applyTemplate(item.id)
                         }
-                        className={`border rounded-xl p-4 text-center transition ${
+                        className={`border rounded-xl p2 sm:p-4 text-center transition ${
                             template === item.id
                             ? "border-black bg-gray-100"
                             : "hover:bg-gray-50"
@@ -689,88 +695,95 @@ export default function SealMaker() {
         
 
             {/* Preview */}
-            <div className="border border-gray-400 border-dotted p-2">
+            <div className="border border-gray-400 border-dotted p-3 md:p-4 min-w-0">
                 <h2 className="text-2xl font-bold mb-6 text-left text-black">
                     Seal Preview
                 </h2>
 
-                <div className="flex justify-center">
+                <div className="flex justify-center overflow-x-auto">
 
                 <div
                     ref={sealRef}
-                    className="bg-white p-6"
+                    className="
+                        bg-white
+                        p-2
+                        sm:p-4
+                        md:p-6
+                        max-w-full
+                        overflow-hidden
+                    "
                 >
                     <svg
-                    ref={svgRef}
-                    width={sealSize}
-                    height={sealSize}
-                    viewBox="0 0 300 300"
-                    >
-                    {/* Outer Border */}
-                    {sealShape === "circle" ? (
-                    <>
-                        {/* Main Outer Circle */}
-                        <circle
-                        cx="150"
-                        cy="150"
-                        r="138"
-                        fill="none"
-                        stroke={sealColor}
-                        strokeWidth={borderWidth}
-                        />
+                        ref={svgRef}
+                        viewBox="0 0 300 300"
+                        width="300"
+                        height="300"
+                        className="w-full h-auto max-w-[500px]"
+                        style={{
+                            maxWidth: `${Math.min(sealSize, 500)}px`,
+                        }}
+                        >
+                        {/* Outer Border */}
+                        {sealShape === "circle" ? (
+                            <>
+                            <circle
+                                cx="150"
+                                cy="150"
+                                r="138"
+                                fill="none"
+                                stroke={sealColor}
+                                strokeWidth={borderWidth}
+                            />
 
-                        {/* Optional Double Outer Circle */}
-                        {doubleBorder && (
-                        <circle
-                            cx="150"
-                            cy="150"
-                            r="130"
-                            fill="none"
-                            stroke={sealColor}
-                            strokeWidth={borderWidth}
-                        />
+                            {doubleBorder && (
+                                <circle
+                                cx="150"
+                                cy="150"
+                                r="130"
+                                fill="none"
+                                stroke={sealColor}
+                                strokeWidth={borderWidth}
+                                />
+                            )}
+                            </>
+                        ) : (
+                            <>
+                            <ellipse
+                                cx="150"
+                                cy="150"
+                                rx={ovalWidth / 1.8}
+                                ry={ovalHeight / 1.8}
+                                fill="none"
+                                stroke={sealColor}
+                                strokeWidth={borderWidth}
+                            />
+
+                            {doubleBorder && (
+                                <ellipse
+                                cx="150"
+                                cy="150"
+                                rx={ovalWidth / 1.8 - 8}
+                                ry={ovalHeight / 1.8 - 8}
+                                fill="none"
+                                stroke={sealColor}
+                                strokeWidth={borderWidth}
+                                />
+                            )}
+                            </>
                         )}
-                    </>
-                    ) : (
-                    <>
-                        {/* Main Outer Oval */}
-                        <ellipse
-                        cx="150"
-                        cy="150"
-                        rx={ovalWidth / 1.8}
-                        ry={ovalHeight / 1.8}
-                        fill="none"
-                        stroke={sealColor}
-                        strokeWidth={borderWidth}
-                        />
 
-                        {/* Optional Double Outer Oval */}
-                        {doubleBorder && (
-                        <ellipse
-                            cx="150"
-                            cy="150"
-                            rx={ovalWidth / 1.8 - 8}
-                            ry={ovalHeight / 1.8 - 8}
-                            fill="none"
-                            stroke={sealColor}
-                            strokeWidth={borderWidth}
-                        />
-                        )}
-                    </>
-                    )}
-
-                    {/* Inner Circle */}
-                    {sealShape === "circle" ? (
-                        <circle
+                        {/* Inner Border */}
+                        {sealShape === "circle" ? (
+                            <circle
                             cx="150"
                             cy="150"
                             r="90"
                             fill="none"
                             stroke={sealColor}
                             strokeWidth={borderWidth}
-                        />
+                            />
                         ) : (
-                        <ellipse
+                            <ellipse
                             cx="150"
                             cy="150"
                             rx={ovalWidth / 2 - 35}
@@ -778,128 +791,127 @@ export default function SealMaker() {
                             fill="none"
                             stroke={sealColor}
                             strokeWidth={borderWidth}
-                        />
-                    )}
-
-                    <defs>
-
-                        {sealShape === "circle" ? (
-                        <>
-                            <path
-                            id="topArc"
-                            d={`
-                                M ${150 - topArcRadius},150
-                                A ${topArcRadius},${topArcRadius}
-                                0 0,1
-                                ${150 + topArcRadius},150
-                            `}
                             />
+                        )}
 
-                            <path
-                            id="bottomArc"
-                            d={`
-                                M ${150 - bottomArcRadius},150
-                                A ${bottomArcRadius},${bottomArcRadius}
-                                0 0,0
-                                ${150 + bottomArcRadius},150
-                            `}
-                            />
-                        </>
-                        ) : (
-                        <>
-                            <path
-                            id="topArc"
-                            d={`
-                                M ${150 - ovalWidth / 2 + 15},150
-                                A ${ovalWidth / 2 - 15},
-                                ${ovalHeight / 2 - 15}
-                                0 0,1
-                                ${150 + ovalWidth / 2 - 15},150
-                            `}
-                            />
+                        <defs>
+                            {sealShape === "circle" ? (
+                            <>
+                                <path
+                                id="topArc"
+                                d={`
+                                    M ${150 - topArcRadius},150
+                                    A ${topArcRadius},${topArcRadius}
+                                    0 0,1
+                                    ${150 + topArcRadius},150
+                                `}
+                                />
 
-                            <path
-                            id="bottomArc"
-                            d={`
-                                M ${150 - ovalWidth / 2 + 15},150
-                                A ${ovalWidth / 2 - 15},
-                                ${ovalHeight / 2 - 15}
-                                0 0,0
-                                ${150 + ovalWidth / 2 - 15},150
-                            `}
-                            />
-                        </>
-                    )}
+                                <path
+                                id="bottomArc"
+                                d={`
+                                    M ${150 - bottomArcRadius},150
+                                    A ${bottomArcRadius},${bottomArcRadius}
+                                    0 0,0
+                                    ${150 + bottomArcRadius},150
+                                `}
+                                />
+                            </>
+                            ) : (
+                            <>
+                                <path
+                                id="topArc"
+                                d={`
+                                    M ${150 - ovalWidth / 2 + 15},150
+                                    A ${ovalWidth / 2 - 15},
+                                    ${ovalHeight / 2 - 15}
+                                    0 0,1
+                                    ${150 + ovalWidth / 2 - 15},150
+                                `}
+                                />
 
-                    </defs>
+                                <path
+                                id="bottomArc"
+                                d={`
+                                    M ${150 - ovalWidth / 2 + 15},150
+                                    A ${ovalWidth / 2 - 15},
+                                    ${ovalHeight / 2 - 15}
+                                    0 0,0
+                                    ${150 + ovalWidth / 2 - 15},150
+                                `}
+                                />
+                            </>
+                            )}
+                        </defs>
 
-                    {/* Top Text */}
-                    <text
-                        fill={sealColor}
-                        fontFamily={fontFamily}
-                        fontSize={topFontSize}
-                        fontWeight="bold"
-                        letterSpacing="2"
+                        {/* Top Text */}
+                        <text
+                            fill={sealColor}
+                            fontFamily={fontFamily}
+                            fontSize={topFontSize}
+                            fontWeight="bold"
+                            letterSpacing="2"
                         >
-                        <textPath
+                            <textPath
                             href="#topArc"
                             startOffset="50%"
                             textAnchor="middle"
                             dominantBaseline="middle"
-                        >
-                        {topText.toUpperCase()}
-                        </textPath>
-                    </text>
+                            >
+                            {topText.toUpperCase()}
+                            </textPath>
+                        </text>
 
-                    {logoPreview && (
-                        <image
+                        {/* Logo */}
+                        {logoPreview && (
+                            <image
                             href={logoPreview}
                             x="115"
                             y={sealShape === "oval" ? 90 : 100}
                             width="70"
                             height="70"
                             preserveAspectRatio="xMidYMid meet"
-                        />
-                    )}
+                            />
+                        )}
 
-                    {/* Left Star */}
-                    <text
-                        x={
+                        {/* Left Star */}
+                        <text
+                            x={
                             sealShape === "oval"
-                            ? 150 - (ovalWidth / 2) + 18
-                            : 40
-                        }
-                        y="155"
-                        textAnchor="middle"
-                        fill={sealColor}
-                        fontFamily={fontFamily}
-                        fontSize={starSize}
-                        fontWeight="bold"
+                                ? 150 - ovalWidth / 2 + 18
+                                : 40
+                            }
+                            y="155"
+                            textAnchor="middle"
+                            fill={sealColor}
+                            fontFamily={fontFamily}
+                            fontSize={starSize}
+                            fontWeight="bold"
                         >
-                        ★
-                    </text>
+                            ★
+                        </text>
 
-                    {/* Right Star */}
-                    <text
-                        x={
+                        {/* Right Star */}
+                        <text
+                            x={
                             sealShape === "oval"
-                            ? 150 + (ovalWidth / 2) - 18
-                            : 260
-                        }
-                        y="155"
-                        textAnchor="middle"
-                        fill={sealColor}
-                        fontFamily={fontFamily}
-                        fontSize={starSize}
-                        fontWeight="bold"
+                                ? 150 + ovalWidth / 2 - 18
+                                : 260
+                            }
+                            y="155"
+                            textAnchor="middle"
+                            fill={sealColor}
+                            fontFamily={fontFamily}
+                            fontSize={starSize}
+                            fontWeight="bold"
                         >
-                        ★
-                    </text>
-                    
-                    {/* Center Text */}
-                    <text
-                        x="150"
-                        y={
+                            ★
+                        </text>
+
+                        {/* Center Text */}
+                        <text
+                            x="150"
+                            y={
                             sealShape === "oval"
                                 ? logoPreview
                                 ? 190
@@ -907,33 +919,33 @@ export default function SealMaker() {
                                 : logoPreview
                                 ? 205
                                 : 160
-                        }
-                        textAnchor="middle"
-                        fill={sealColor}
-                        fontFamily={fontFamily}
-                        fontSize={centerFontSize}
-                        fontWeight="bold"
-                    >
-                        {centerText}
-                    </text>
-
-                    {/* Bottom Text */}
-                    <text
-                        fill={sealColor}
-                        fontFamily={fontFamily}
-                        fontSize={bottomFontSize}
-                        fontWeight="bold"
-                        letterSpacing="2"
+                            }
+                            textAnchor="middle"
+                            fill={sealColor}
+                            fontFamily={fontFamily}
+                            fontSize={centerFontSize}
+                            fontWeight="bold"
                         >
-                        <textPath
+                            {centerText}
+                        </text>
+
+                        {/* Bottom Text */}
+                        <text
+                            fill={sealColor}
+                            fontFamily={fontFamily}
+                            fontSize={bottomFontSize}
+                            fontWeight="bold"
+                            letterSpacing="2"
+                        >
+                            <textPath
                             href="#bottomArc"
                             startOffset="50%"
                             textAnchor="middle"
                             dominantBaseline="middle"
-                        >
+                            >
                             {bottomText.toUpperCase()}
-                        </textPath>
-                    </text>
+                            </textPath>
+                        </text>
                     </svg>
 
                 </div>

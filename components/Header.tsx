@@ -217,7 +217,7 @@ export default function Header() {
 
                 setMobileOpen(!mobileOpen);
             }}
-            className="lg:hidden"
+            className="lg:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             {mobileOpen ? (
               <X size={28} />
@@ -244,14 +244,14 @@ export default function Header() {
               onClick={() =>
                 setMobileOpen(false)
               }
-              className="block"
+              className="block text-black"
             >
               Home
             </Link>
 
             <div>
 
-              <p className="font-semibold mb-2">
+              <p className="font-semibold mb-2 text-black">
                 Tools
               </p>
 
@@ -279,7 +279,7 @@ export default function Header() {
               onClick={() =>
                 setMobileOpen(false)
               }
-              className="block"
+              className="block text-black"
             >
               Categories
             </Link>
@@ -289,7 +289,7 @@ export default function Header() {
               onClick={() =>
                 setMobileOpen(false)
               }
-              className="block"
+              className="block text-black"
             >
               About
             </Link>
@@ -298,7 +298,7 @@ export default function Header() {
               onClick={() =>
                 setMobileOpen(false)
               }
-              className="block"
+              className="block text-black"
             >
               Contact
             </Link>

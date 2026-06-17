@@ -42,7 +42,7 @@ export default function QRGeneratorPage() {
     >
       {/* Generator */}
       <section className="bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
-        <label className="block text-sm font-medium mb-2">
+        <label className="block text-sm font-medium mb-2 text-black">
           Enter text or URL
         </label>
 
@@ -51,7 +51,7 @@ export default function QRGeneratorPage() {
           onChange={(e) => setText(e.target.value)}
           placeholder="https://xeniso.com"
           rows={4}
-          className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring"
+          className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring text-gray-700"
         />
 
         <button
@@ -76,7 +76,7 @@ export default function QRGeneratorPage() {
             QR Code generated successfully.
           </p>
 
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold text-black">
             Your QR Code
           </h2>
 
@@ -99,7 +99,7 @@ export default function QRGeneratorPage() {
                 await navigator.clipboard.writeText(text);
                 alert("Copied successfully!");
               }}
-              className="px-6 py-3 rounded-lg border hover:bg-gray-100 cursor-pointer transition"
+              className="px-6 py-3 rounded-lg border hover:bg-gray-100 cursor-pointer transition text-gray-800"
             >
               Copy Content
             </button>
@@ -113,7 +113,7 @@ export default function QRGeneratorPage() {
           How to Use
         </h2>
 
-        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-700">
+        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-400">
           <li>Enter your URL or text.</li>
           <li>Click Generate QR Code.</li>
           <li>Preview your QR code instantly.</li>
