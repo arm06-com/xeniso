@@ -49,7 +49,7 @@ export default function HomePage() {
     <main>
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-gray-50 to-white">
+      <section className="bg-linear-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-6 py-24 text-center">
 
           <h1 className="text-5xl md:text-6xl font-bold leading-tight">

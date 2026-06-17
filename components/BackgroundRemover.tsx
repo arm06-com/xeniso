@@ -479,7 +479,7 @@ export default function BackgroundRemover() {
                       </p>
                       
                       <ReactCompareSlider
-                        className="h-[350px] md:h-[450px] lg:h-[550px]"
+                        className="h-87.5 md:h-112.5 lg:h-137.5"
                         itemOne={
                           <ReactCompareSliderImage
                             src={preview}
@@ -504,7 +504,7 @@ export default function BackgroundRemover() {
                       />
                     </div>
                   ) : (
-                    <div className="relative h-[500px] rounded-2xl overflow-hidden border bg-gray-100">
+                    <div className="relative h-125 rounded-2xl overflow-hidden border bg-gray-100">
                       <Cropper
                         image={
                           backgroundPreview ||
