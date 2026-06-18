@@ -96,10 +96,32 @@ export default function BackgroundRemover() {
     resultPreview,
   ]);
 
+  const isSupportedImageFile = (selectedFile: File) => {
+    if (selectedFile.type.startsWith("image/")) {
+      return true;
+    }
+
+    return /\.(jpe?g|png|webp)$/i.test(selectedFile.name);
+  };
+
   // Handle File Upload
   const handleFile = (selectedFile: File) => {
-    if (!selectedFile.type.startsWith("image/")) {
-      alert("Please upload an image.");
+    if (!isSupportedImageFile(selectedFile)) {
+      alert("Please upload a valid JPG, PNG or WebP image.");
+      return;
+    }
+
+    if (selectedFile.size === 0) {
+      alert("The selected image file is empty or corrupted.");
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (selectedFile.size > maxSize) {
+      alert(
+        "Please upload an image smaller than 5MB."
+      );
       return;
     }
     setResultPreview(null);
@@ -146,33 +168,44 @@ export default function BackgroundRemover() {
     if (!file) return;
 
     try {
-        setIsRemoving(true);
-        setProgress(10);
+      setIsRemoving(true);
+      setProgress(10);
 
-        const blob = await removeBackground(file);
+      console.log("Starting background removal...");
 
-        setProgress(90);
+      const blob = await removeBackground(file);
 
-        const url = URL.createObjectURL(blob);
+      console.log("Background removal completed", blob);
 
-        setDownloadUrl(url);
-        setResultPreview(url);
+      setProgress(90);
 
-        setProgress(100);
+      const url = URL.createObjectURL(blob);
+
+      setDownloadUrl(url);
+      setResultPreview(url);
+
+      setProgress(100);
     } catch (error: any) {
-        console.error(
-          "Background removal error:",
-          error
-        );
+      console.error("FULL ERROR:", error);
+      console.error("MESSAGE:", error?.message);
+      console.error("STACK:", error?.stack);
 
+      const message =
+        typeof error?.message === "string"
+          ? error.message
+          : "Failed to remove background.";
+
+      if (message.includes("source image could not be decoded")) {
         alert(
-          error?.message ||
-          "Failed to remove background."
+          "Unable to decode this image. Please try another valid JPG, PNG, or WebP file."
         );
+      } else {
+        alert(message);
+      }
     } finally {
-        setIsRemoving(false);
-        setProgress(0); 
-        }
+      setIsRemoving(false);
+      setProgress(0);
+    }
   };
  // Apply Background Color
   const applyBackground = () => {

@@ -718,7 +718,7 @@ export default function SealMaker() {
                         viewBox="0 0 300 300"
                         width="300"
                         height="300"
-                        className="w-full h-auto max-w-[500px]"
+                        className="w-full h-auto max-w-125"
                         style={{
                             maxWidth: `${Math.min(sealSize, 500)}px`,
                         }}
