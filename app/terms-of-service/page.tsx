@@ -10,24 +10,27 @@ export default function TermsOfServicePage() {
   const updatedDate = "June 2026";
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-16">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
 
       {/* Header */}
       <section>
-        <h1 className="text-5xl font-bold">
+
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
           Terms of Service
         </h1>
 
-        <p className="mt-4 text-gray-600">
+        <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-600">
           Last Updated: {updatedDate}
         </p>
+
       </section>
 
       {/* Content */}
-      <div className="mt-12 space-y-10 text-gray-700 leading-8">
+      <div className="mt-10 sm:mt-12 space-y-8 sm:space-y-10 text-gray-700 leading-relaxed sm:leading-8">
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Acceptance of Terms
           </h2>
 
@@ -37,10 +40,12 @@ export default function TermsOfServicePage() {
             Service. If you do not agree with these terms,
             please discontinue use of our website and tools.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Use of Our Services
           </h2>
 
@@ -50,10 +55,12 @@ export default function TermsOfServicePage() {
             You agree to use these services only for lawful
             purposes and in accordance with these terms.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             User Responsibilities
           </h2>
 
@@ -61,7 +68,8 @@ export default function TermsOfServicePage() {
             You are responsible for ensuring that:
           </p>
 
-          <ul className="list-disc pl-6 mt-4 space-y-2">
+          <ul className="list-disc pl-5 sm:pl-6 mt-4 space-y-2">
+
             <li>
               You have the necessary rights to upload and process files.
             </li>
@@ -79,11 +87,14 @@ export default function TermsOfServicePage() {
               You do not attempt to interfere with the
               operation or security of the website.
             </li>
+
           </ul>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Intellectual Property
           </h2>
 
@@ -100,10 +111,12 @@ export default function TermsOfServicePage() {
             any part of the website without prior written
             permission, except as permitted by law.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Uploaded Files
           </h2>
 
@@ -117,10 +130,12 @@ export default function TermsOfServicePage() {
             You are solely responsible for the content
             of files processed through our services.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Service Availability
           </h2>
 
@@ -131,10 +146,12 @@ export default function TermsOfServicePage() {
             suspend, or discontinue features at any time
             without prior notice.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Disclaimer of Warranties
           </h2>
 
@@ -149,10 +166,12 @@ export default function TermsOfServicePage() {
             be error-free, secure, or suitable for every
             intended purpose.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Limitation of Liability
           </h2>
 
@@ -168,10 +187,12 @@ export default function TermsOfServicePage() {
             Users should maintain backups of important
             files before processing them.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Third-Party Services
           </h2>
 
@@ -181,10 +202,12 @@ export default function TermsOfServicePage() {
             Use of those services may be subject to
             separate terms and policies.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Changes to These Terms
           </h2>
 
@@ -194,10 +217,12 @@ export default function TermsOfServicePage() {
             will be published on this page with a revised
             effective date.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Governing Law
           </h2>
 
@@ -208,10 +233,12 @@ export default function TermsOfServicePage() {
             Xeniso shall be resolved through the appropriate
             legal processes.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Contact Us
           </h2>
 
@@ -220,6 +247,7 @@ export default function TermsOfServicePage() {
             of Service, please contact us through our
             Contact page.
           </p>
+
         </section>
 
       </div>

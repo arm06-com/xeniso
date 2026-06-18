@@ -10,24 +10,27 @@ export default function DisclaimerPage() {
   const updatedDate = "June 2026";
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-16">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
 
       {/* Header */}
       <section>
-        <h1 className="text-5xl font-bold">
+
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
           Disclaimer
         </h1>
 
-        <p className="mt-4 text-gray-600">
+        <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-600">
           Last Updated: {updatedDate}
         </p>
+
       </section>
 
       {/* Content */}
-      <div className="mt-12 space-y-10 text-gray-700 leading-8">
+      <div className="mt-10 sm:mt-12 space-y-8 sm:space-y-10 text-gray-700 leading-relaxed sm:leading-8">
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             General Information
           </h2>
 
@@ -44,10 +47,12 @@ export default function DisclaimerPage() {
             or availability of any information or functionality
             on this website.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Use at Your Own Risk
           </h2>
 
@@ -62,10 +67,12 @@ export default function DisclaimerPage() {
             relying on them for personal, educational,
             professional, or legal purposes.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             No Professional Advice
           </h2>
 
@@ -80,10 +87,12 @@ export default function DisclaimerPage() {
             Users should consult qualified professionals when
             appropriate.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             File Processing Disclaimer
           </h2>
 
@@ -99,10 +108,12 @@ export default function DisclaimerPage() {
             corruption, or unintended modifications resulting
             from the use of our tools.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Third-Party Content and Links
           </h2>
 
@@ -116,10 +127,12 @@ export default function DisclaimerPage() {
             practices, or policies of third-party websites,
             and we are not responsible for their actions.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Advertising Disclaimer
           </h2>
 
@@ -134,10 +147,12 @@ export default function DisclaimerPage() {
             endorsement of the advertised products,
             services, or companies.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Limitation of Liability
           </h2>
 
@@ -148,10 +163,12 @@ export default function DisclaimerPage() {
             special damages arising from the use of, or inability
             to use, our website or services.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Changes to This Disclaimer
           </h2>
 
@@ -164,10 +181,12 @@ export default function DisclaimerPage() {
             Updated versions will be published on this page
             with a revised effective date.
           </p>
+
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-4">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
             Contact Us
           </h2>
 
@@ -176,6 +195,7 @@ export default function DisclaimerPage() {
             Disclaimer, please contact us through our
             Contact page.
           </p>
+
         </section>
 
       </div>

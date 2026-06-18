@@ -20,6 +20,12 @@ export default function ToolSidebar() {
               PDF Compressor
             </Link>
             <Link
+              href="/tools/pdf-converter"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
+            >
+              Image to PDF Converter
+            </Link>
+            <Link
               href="/tools/pdf-splitter"
               className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >

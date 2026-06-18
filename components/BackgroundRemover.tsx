@@ -13,7 +13,6 @@ export default function BackgroundRemover() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
-
   const [preview, setPreview] = useState<string | null>(null);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -25,86 +24,54 @@ export default function BackgroundRemover() {
   const [downloadUrl, setDownloadUrl] =
     useState<string | null>(null);
 
-  const [progress, setProgress] =
-    useState(0);
+  const [progress, setProgress] = useState(0);
 
   const [backgroundType, setBackgroundType] =
-    useState<
-      "transparent" | "white" | "black" | "custom"
-    >("transparent");
+    useState<"transparent" | "white" | "black" | "custom">("transparent");
 
-  const [customColor, setCustomColor] =
-    useState("#ffffff");
+  const [customColor, setCustomColor] = useState("#ffffff");
 
   const [backgroundPreview, setBackgroundPreview] =
     useState<string | null>(null);
 
-  const [crop, setCrop] = useState({
-    x: 0,
-    y: 0,
-  });
-
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
 
-  const [croppedAreaPixels, setCroppedAreaPixels] =
-    useState<any>(null);
-
-  const [aspect, setAspect] =
-    useState<number | undefined>(undefined);
+  const [aspect, setAspect] = useState<number | undefined>(undefined);
 
   const [activeTab, setActiveTab] =
-  useState<"compare" | "crop">(
-    "compare"
-  );
+    useState<"compare" | "crop">("compare");
 
   const [croppedPreview, setCroppedPreview] =
-  useState<string | null>(null);
+    useState<string | null>(null);
 
   useEffect(() => {
     return () => {
-        if (downloadUrl) {
-        URL.revokeObjectURL(downloadUrl);
-        }
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     };
   }, [downloadUrl]);
 
   useEffect(() => {
     applyBackground();
-  }, [
-    resultPreview,
-    backgroundType,
-    customColor,
-  ]);
+  }, [resultPreview, backgroundType, customColor]);
 
   useEffect(() => {
     const updateCrop = async () => {
-      if (
-        activeTab === "crop" &&
-        croppedAreaPixels
-      ) {
-        const cropped =
-          await createCroppedImage();
-
+      if (activeTab === "crop" && croppedAreaPixels) {
+        const cropped = await createCroppedImage();
         setCroppedPreview(cropped);
       }
     };
 
     updateCrop();
-  }, [
-    croppedAreaPixels,
-    backgroundPreview,
-    resultPreview,
-  ]);
+  }, [croppedAreaPixels, backgroundPreview, resultPreview]);
 
   const isSupportedImageFile = (selectedFile: File) => {
-    if (selectedFile.type.startsWith("image/")) {
-      return true;
-    }
-
+    if (selectedFile.type.startsWith("image/")) return true;
     return /\.(jpe?g|png|webp)$/i.test(selectedFile.name);
   };
 
-  // Handle File Upload
   const handleFile = (selectedFile: File) => {
     if (!isSupportedImageFile(selectedFile)) {
       alert("Please upload a valid JPG, PNG or WebP image.");
@@ -116,54 +83,36 @@ export default function BackgroundRemover() {
       return;
     }
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
+    const maxSize = 5 * 1024 * 1024;
     if (selectedFile.size > maxSize) {
-      alert(
-        "Please upload an image smaller than 5MB."
-      );
+      alert("Please upload an image smaller than 5MB.");
       return;
     }
+
     setResultPreview(null);
-
-    if (downloadUrl) {
-        URL.revokeObjectURL(downloadUrl);
-    }
-
+    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setDownloadUrl(null);
 
     setProgress(0);
-
     setBackgroundPreview(null);
     setBackgroundType("transparent");
     setCustomColor("#ffffff");
 
     setFile(selectedFile);
-
     setCroppedPreview(null);
 
-      setCrop({
-        x: 0,
-        y: 0,
-      });
-
+    setCrop({ x: 0, y: 0 });
     setZoom(1);
-
     setActiveTab("compare");
 
     const reader = new FileReader();
-
     reader.onload = (e) => {
       const result = e.target?.result;
-
-      if (typeof result === "string") {
-        setPreview(result);
-      }
+      if (typeof result === "string") setPreview(result);
     };
-
     reader.readAsDataURL(selectedFile);
   };
-  // Handle Background Removal
+
   const handleRemoveBackground = async () => {
     if (!file) return;
 
@@ -171,121 +120,62 @@ export default function BackgroundRemover() {
       setIsRemoving(true);
       setProgress(10);
 
-      console.log("Starting background removal...");
-
       const blob = await removeBackground(file);
-
-      console.log("Background removal completed", blob);
 
       setProgress(90);
 
       const url = URL.createObjectURL(blob);
-
       setDownloadUrl(url);
       setResultPreview(url);
 
       setProgress(100);
     } catch (error: any) {
-      console.error("FULL ERROR:", error);
-      console.error("MESSAGE:", error?.message);
-      console.error("STACK:", error?.stack);
-
-      const message =
-        typeof error?.message === "string"
-          ? error.message
-          : "Failed to remove background.";
-
-      if (message.includes("source image could not be decoded")) {
-        alert(
-          "Unable to decode this image. Please try another valid JPG, PNG, or WebP file."
-        );
-      } else {
-        alert(message);
-      }
+      alert(error?.message || "Failed to remove background.");
     } finally {
       setIsRemoving(false);
       setProgress(0);
     }
   };
- // Apply Background Color
+
   const applyBackground = () => {
     if (!resultPreview) return;
 
     const img = new Image();
-
     img.onload = () => {
-      const canvas =
-        document.createElement("canvas");
-
+      const canvas = document.createElement("canvas");
       canvas.width = img.width;
       canvas.height = img.height;
 
-      const ctx =
-        canvas.getContext("2d");
-
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       if (backgroundType !== "transparent") {
         let color = "#ffffff";
-
-        if (backgroundType === "black") {
-          color = "#000000";
-        }
-
-        if (backgroundType === "custom") {
-          color = customColor;
-        }
+        if (backgroundType === "black") color = "#000000";
+        if (backgroundType === "custom") color = customColor;
 
         ctx.fillStyle = color;
-
-        ctx.fillRect(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
       ctx.drawImage(img, 0, 0);
 
-      setBackgroundPreview(
-        canvas.toDataURL("image/png")
-      );
+      setBackgroundPreview(canvas.toDataURL("image/png"));
     };
 
     img.src = resultPreview;
   };
 
-  // Astect Ratio Calculation
   const cropPresets = [
-    {
-      label: "Free",
-      value: undefined,
-    },
-    {
-      label: "Passport",
-      value: 35 / 45,
-    },
-    {
-      label: "Stamp",
-      value: 1,
-    },
-    {
-      label: "Instagram",
-      value: 1,
-    },
-    {
-      label: "YouTube",
-      value: 16 / 9,
-    },
+    { label: "Free", value: undefined },
+    { label: "Passport", value: 35 / 45 },
+    { label: "Stamp", value: 1 },
+    { label: "Instagram", value: 1 },
+    { label: "YouTube", value: 16 / 9 },
   ];
-  
-  // Create Cropped Image
+
   const createCroppedImage = async () => {
-    if (
-      !croppedAreaPixels ||
-      !(backgroundPreview || resultPreview)
-    ) {
+    if (!croppedAreaPixels || !(backgroundPreview || resultPreview)) {
       return null;
     }
 
@@ -293,22 +183,13 @@ export default function BackgroundRemover() {
       const image = new Image();
 
       image.onload = () => {
-        const canvas =
-          document.createElement("canvas");
+        const canvas = document.createElement("canvas");
 
-        canvas.width =
-          croppedAreaPixels.width;
+        canvas.width = croppedAreaPixels.width;
+        canvas.height = croppedAreaPixels.height;
 
-        canvas.height =
-          croppedAreaPixels.height;
-
-        const ctx =
-          canvas.getContext("2d");
-
-        if (!ctx) {
-          resolve("");
-          return;
-        }
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve("");
 
         ctx.drawImage(
           image,
@@ -322,21 +203,18 @@ export default function BackgroundRemover() {
           croppedAreaPixels.height
         );
 
-        resolve(
-          canvas.toDataURL("image/png")
-        );
+        resolve(canvas.toDataURL("image/png"));
       };
 
-      image.src =
-        backgroundPreview ||
-        resultPreview!;
+      image.src = backgroundPreview || resultPreview!;
     });
   };
-  return (
-    <div className="space-y-8">
 
-      {/* Upload Area */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
+  return (
+    <div className="space-y-6 sm:space-y-8">
+
+      {/* Upload */}
+      <section className="bg-white border rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-md">
         <div
           onClick={() => fileInputRef.current?.click()}
           onDragOver={(e) => {
@@ -346,30 +224,25 @@ export default function BackgroundRemover() {
           onDragLeave={() => setIsDragging(false)}
           onDrop={(e) => {
             e.preventDefault();
-
             setIsDragging(false);
-
             const droppedFile = e.dataTransfer.files?.[0];
-
-            if (droppedFile) {
-              handleFile(droppedFile);
-            }
+            if (droppedFile) handleFile(droppedFile);
           }}
-          className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition ${
+          className={`border-2 border-dashed rounded-xl sm:rounded-2xl p-6 sm:p-12 text-center cursor-pointer transition ${
             isDragging
               ? "border-black bg-gray-50"
               : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-2xl font-semibold text-black">
+          <h2 className="text-lg sm:text-2xl font-semibold">
             Drag & Drop Your Image
           </h2>
 
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
             or click to select a file
           </p>
 
-          <p className="mt-4 text-sm text-gray-500">
+          <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
             Supports JPG, PNG and WebP
           </p>
 
@@ -380,403 +253,123 @@ export default function BackgroundRemover() {
             accept="image/*"
             onChange={(e) => {
               const selectedFile = e.target.files?.[0];
-
-              if (selectedFile) {
-                handleFile(selectedFile);
-              }
+              if (selectedFile) handleFile(selectedFile);
             }}
           />
         </div>
       </section>
 
-      {/* Original Preview */}
+      {/* Original */}
       {file && preview && (
-        <section className="bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
+        <section className="bg-white border rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-md">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
 
-          <div className="grid lg:grid-cols-2 gap-8">
-
-            {/* Preview */}
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-black">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
                 Original Image
               </h2>
 
               <img
                 src={preview}
-                alt="Original"
-                className="w-full rounded-xl border object-contain max-h-125"
+                className="w-full rounded-xl border object-contain max-h-[300px] sm:max-h-125 lg:max-h-125"
               />
             </div>
 
-            {/* Details */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
 
               <div>
-                <span className="font-semibold text-black">
-                  File Name:
-                </span>
-
-                <p className="text-gray-600 break-all">
+                <span className="font-semibold">File Name:</span>
+                <p className="text-gray-600 break-all text-sm sm:text-base">
                   {file.name}
                 </p>
               </div>
 
               <div>
-                <span className="font-semibold text-black">
-                  File Size:
-                </span>
-
-                <p className="text-gray-600">
+                <span className="font-semibold">File Size:</span>
+                <p className="text-gray-600 text-sm sm:text-base">
                   {(file.size / 1024).toFixed(1)} KB
                 </p>
               </div>
 
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full bg-gray-100 hover:bg-gray-200 py-3 rounded-lg font-medium cursor-pointer transition"
-              >
+              <button className="w-full bg-gray-100 py-3 rounded-lg text-sm sm:text-base">
                 Replace Image
               </button>
 
               <button
                 onClick={handleRemoveBackground}
                 disabled={isRemoving}
-                className="w-full bg-black text-white py-3 rounded-lg font-medium hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                {isRemoving
-                    ? "Removing Background..."
-                    : "Remove Background"}
+                className="w-full bg-black text-white py-3 rounded-lg text-sm sm:text-base"
+              >
+                {isRemoving ? "Removing..." : "Remove Background"}
               </button>
 
               {isRemoving && (
-        <>
-                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div className="space-y-2">
+                  <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                     <div
-                        className="bg-black h-3 transition-all"
-                        style={{
-                        width: `${progress}%`,
-                        }}
+                      className="bg-black h-2"
+                      style={{ width: `${progress}%` }}
                     />
-                    </div>
-
-                    <p className="text-sm text-gray-600">
-                    Processing...
-                    </p>
-                </>
-                )}
+                  </div>
+                </div>
+              )}
 
             </div>
+          </div>
+        </section>
+      )}
 
+      {/* Result */}
+      {resultPreview && preview && (
+        <section className="bg-white border rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-md">
+
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
+            Compare Results
+          </h2>
+
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <button className="px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg">
+              Compare
+            </button>
+            <button className="px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg">
+              Crop
+            </button>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+
+            <div className="lg:col-span-2">
+              <div className="rounded-xl overflow-hidden">
+                <ReactCompareSlider
+                  className="h-62.5 sm:h-75 lg:h-125"
+                  itemOne={<ReactCompareSliderImage src={preview} />}
+                  itemTwo={<ReactCompareSliderImage src={backgroundPreview || resultPreview} />}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4 sm:space-y-6">
+
+              <div>
+                <label className="block font-medium">Background</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {["transparent", "white", "black", "custom"].map((type) => (
+                    <button
+                      key={type}
+                      className="px-3 py-2 border rounded-lg text-sm"
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
           </div>
 
         </section>
       )}
 
-        {/* Result Preview */}
-        {resultPreview && preview && (
-            <section className="bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
-
-                <h2 className="text-2xl font-bold mb-6 text-black">
-                Compare Results
-                </h2>
-
-                <div className="flex gap-3 mb-6">
-                  <button
-                    onClick={() =>
-                      setActiveTab("compare")
-                    }
-                    className={`px-4 py-2 rounded-lg ${
-                      activeTab === "compare"
-                        ? "bg-black text-white"
-                        : "border"
-                    }`}
-                  >
-                    Compare
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      setActiveTab("crop")
-                    }
-                    className={`px-4 py-2 rounded-lg ${
-                      activeTab === "crop"
-                        ? "bg-black text-white"
-                        : "border"
-                    }`}
-                  >
-                    Crop
-                  </button>
-                </div>
-                <div className="grid lg:grid-cols-3 gap-8">
-
-                  {/* Left Column */}
-                  {activeTab === "compare" ? (
-                  <div className="max-w-2xl mx-auto border rounded-2xl overflow-hidden bg-gray-50 lg:col-span-2">
-                      <p className="text-gray-600 mb-6 text-center p-4 border-black-200 border-b border-dashed">
-                          Drag the slider to compare the original image.
-                      </p>
-                      
-                      <ReactCompareSlider
-                        className="h-87.5 md:h-112.5 lg:h-137.5"
-                        itemOne={
-                          <ReactCompareSliderImage
-                            src={preview}
-                            alt="Original"
-                            style={{
-                              objectFit: "contain",
-                            }}
-                          />
-                        }
-                        itemTwo={
-                          <ReactCompareSliderImage
-                            src={
-                              backgroundPreview ||
-                              resultPreview
-                            }
-                            alt="Removed"
-                            style={{
-                              objectFit: "contain",
-                            }}
-                          />
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <div className="relative h-125 rounded-2xl overflow-hidden border bg-gray-100">
-                      <Cropper
-                        image={
-                          backgroundPreview ||
-                          resultPreview
-                        }
-                        crop={crop}
-                        zoom={zoom}
-                        aspect={aspect}
-                        onCropChange={setCrop}
-                        onZoomChange={setZoom}
-                        onCropComplete={(
-                          _,
-                          croppedAreaPixels
-                        ) =>
-                          setCroppedAreaPixels(
-                            croppedAreaPixels
-                          )
-                        }
-                      />
-                    </div>
-                  )}
-                  {/* Right Column */}
-                  <div className="mt-6 space-y-6">
-                    <label className="block font-medium mb-3 text-black">
-                      Background
-                    </label>
-
-                    <div className="flex flex-wrap gap-3">
-
-                      <button
-                        onClick={() =>
-                          setBackgroundType(
-                            "transparent"
-                          )
-                        }
-                        className={`px-4 py-2 rounded-lg border ${
-                          backgroundType ===
-                          "transparent"
-                            ? "bg-black text-white"
-                            : ""
-                        }`}
-                      >
-                        Transparent
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setBackgroundType("white")
-                        }
-                        className={`px-4 py-2 rounded-lg border ${
-                          backgroundType ===
-                          "white"
-                            ? "bg-black text-white"
-                            : ""
-                        }`}
-                      >
-                        White
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setBackgroundType("black")
-                        }
-                        className={`px-4 py-2 rounded-lg border ${
-                          backgroundType ===
-                          "black"
-                            ? "bg-black text-white"
-                            : ""
-                        }`}
-                      >
-                        Black
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setBackgroundType("custom")
-                        }
-                        className={`px-4 py-2 rounded-lg border ${
-                          backgroundType ===
-                          "custom"
-                            ? "bg-black text-white"
-                            : ""
-                        }`}
-                      >
-                        Custom
-                      </button>
-
-                    </div>
-
-                    {backgroundType === "custom" && (
-                      <input
-                        type="color"
-                        value={customColor}
-                        onChange={(e) =>
-                          setCustomColor(
-                            e.target.value
-                          )
-                        }
-                        className="mt-4 h-12 cursor-pointer w-full"
-                      />
-                    )}
-
-                    {activeTab === "crop" && (
-                    <>
-                      <label className="block font-medium text-black">
-                        Crop Ratio
-                      </label>
-
-                      <select
-                        className="w-full border rounded-lg px-4 py-3"
-                        onChange={(e) => {
-                          switch (e.target.value) {
-                            case "passport":
-                              setAspect(35 / 45);
-                              break;
-
-                            case "stamp":
-                              setAspect(1);
-                              break;
-
-                            case "instagram":
-                              setAspect(1);
-                              break;
-
-                            case "youtube":
-                              setAspect(16 / 9);
-                              break;
-
-                            default:
-                              setAspect(undefined);
-                          }
-                        }}
-                      >
-                        <option value="free">Free</option>
-                        <option value="passport">
-                          Passport (35×45)
-                        </option>
-                        <option value="stamp">
-                          Stamp (1:1)
-                        </option>
-                        <option value="instagram">
-                          Instagram (1:1)
-                        </option>
-                        <option value="youtube">
-                          YouTube (16:9)
-                        </option>
-                      </select>
-
-                      <div className="mt-4">
-                        <label className="block font-medium mb-2">
-                          Zoom ({zoom.toFixed(1)}×)
-                        </label>
-
-                        <input
-                          type="range"
-                          min={1}
-                          max={3}
-                          step={0.1}
-                          value={zoom}
-                          onChange={(e) =>
-                            setZoom(
-                              Number(e.target.value)
-                            )
-                          }
-                          className="w-full"
-                        />
-                      </div>
-                    </>
-                  )}
-                  </div>
-
-                </div>
-
-                <div className="mt-6 grid md:grid-cols-2 gap-4">
-
-                <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-sm text-gray-500">
-                    Original
-                    </p>
-
-                    <p className="font-semibold">
-                    {file?.name}
-                    </p>
-                </div>
-
-                <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-sm text-gray-500">
-                    Result
-                    </p>
-
-                    <p className="font-semibold ">
-                    Transparent PNG
-                    </p>
-                </div>
-
-                </div>
-
-                <button
-                onClick={() => {
-                    if (!downloadUrl) return;
-
-                    const link =
-                    document.createElement("a");
-
-                    link.href =
-                      activeTab === "crop" &&
-                      croppedPreview
-                        ? croppedPreview
-                        : backgroundPreview ||
-                          downloadUrl!;
-
-                    const baseName =
-                      file?.name.replace(
-                        /\.[^/.]+$/,
-                        ""
-                      ) || "image";
-
-                    const suffix =
-                      activeTab === "crop"
-                        ? "cropped"
-                        : backgroundType;
-
-                    link.download =
-                      `${baseName}-${suffix}.png`;
-
-                    link.click();
-                }}
-                className="mt-6 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium cursor-pointer"
-                >
-                 Download PNG
-                </button>
-
-            </section>
-        )}
     </div>
   );
 }

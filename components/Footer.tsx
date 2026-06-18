@@ -13,7 +13,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-950 text-gray-300 mt-20">
+    <footer className="bg-gray-700 text-gray-300 mt-20">
 
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-6 py-16">

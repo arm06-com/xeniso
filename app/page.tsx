@@ -8,6 +8,11 @@ const tools = [
     href: "/tools/pdf-compressor",
   },
   {
+    title: "Image to PDF Converter",
+    description: "Convert Image to PDF instantly.",
+    href: "/tools/pdf-converter",
+  },
+  {
     title: "PDF Splitter",
     description: "Extract pages from PDF files.",
     href: "/tools/pdf-splitter",
@@ -305,7 +310,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 mt-14">
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-gray-300 text-black flex items-center justify-center mx-auto text-xl font-bold">
               1
             </div>
 
@@ -319,7 +324,7 @@ export default function HomePage() {
           </div>
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-gray-300 text-black flex items-center justify-center mx-auto text-xl font-bold">
               2
             </div>
 
@@ -333,7 +338,7 @@ export default function HomePage() {
           </div>
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-gray-300 text-black flex items-center justify-center mx-auto text-xl font-bold">
               3
             </div>
 
@@ -481,7 +486,7 @@ export default function HomePage() {
 
           <a
             href="/tools"
-            className="inline-block mt-8 bg-blue-500 text-white px-8 py-4 rounded-xl font-medium hover:bg-blue-600 transition"
+            className="inline-block mt-8 bg-black text-white px-8 py-4 rounded-xl font-medium hover:bg-gray-600 transition"
           >
             Explore All Tools
           </a>
