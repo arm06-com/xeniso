@@ -193,7 +193,7 @@ export default function ImageConverter({
             isDragging ? "border-black bg-gray-50" : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-xl sm:text-2xl font-semibold">
+          <h2 className="text-xl sm:text-2xl font-semibold sm:text-black">
             Drag & Drop Your Image
           </h2>
 
@@ -226,23 +226,23 @@ export default function ImageConverter({
 
             {/* LEFT */}
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:text-black">
                 Original Image
               </h2>
 
               <img
                 src={originalPreview}
-                className="w-full max-h-[400px] object-contain rounded-xl border"
+                className="w-full max-h-100 object-contain rounded-xl border"
                 alt="original"
               />
 
               <div className="mt-6 space-y-3 text-sm sm:text-base">
-                <p><span className="font-semibold">Format:</span> {inputFormat}</p>
-                <p className="break-all"><span className="font-semibold">Name:</span> {file.name}</p>
-                <p><span className="font-semibold">Size:</span> {(file.size / 1024).toFixed(1)} KB</p>
+                <p><span className="font-semibold sm:text-gray-700">Format:</span> {inputFormat}</p>
+                <p className="break-all"><span className="font-semibold sm:text-gray-700">Name:</span> {file.name}</p>
+                <p><span className="font-semibold sm:text-gray-700">Size:</span> {(file.size / 1024).toFixed(1)} KB</p>
 
                 <select
-                  className="w-full border rounded-lg px-4 py-3 mt-2"
+                  className="w-full border rounded-lg px-4 py-3 mt-2 sm:text-gray-700"
                   value={outputFormat}
                   onChange={(e) =>
                     setOutputFormat(e.target.value as SupportedFormat)
@@ -283,7 +283,7 @@ export default function ImageConverter({
 
             {/* RIGHT */}
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:text-black">
                 Converted Image
               </h2>
 

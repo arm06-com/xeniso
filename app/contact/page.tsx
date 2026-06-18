@@ -101,7 +101,7 @@ export default function ContactPage() {
 
             <div>
 
-              <h3 className="text-lg sm:text-xl font-semibold">
+              <h3 className="text-lg sm:text-xl font-semibold sm:text-black">
                 Response Time
               </h3>
 
@@ -123,7 +123,7 @@ export default function ContactPage() {
 
             <div>
 
-              <h3 className="text-lg sm:text-xl font-semibold">
+              <h3 className="text-lg sm:text-xl font-semibold sm:text-black">
                 Before Contacting Us
               </h3>
 

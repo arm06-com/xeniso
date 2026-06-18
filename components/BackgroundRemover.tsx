@@ -234,7 +234,7 @@ export default function BackgroundRemover() {
               : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-lg sm:text-2xl font-semibold">
+          <h2 className="text-lg sm:text-2xl font-semibold sm:text-black">
             Drag & Drop Your Image
           </h2>
 
@@ -271,7 +271,7 @@ export default function BackgroundRemover() {
 
               <img
                 src={preview}
-                className="w-full rounded-xl border object-contain max-h-[300px] sm:max-h-125 lg:max-h-125"
+                className="w-full rounded-xl border object-contain max-h-75 sm:max-h-125 lg:max-h-125"
               />
             </div>
 

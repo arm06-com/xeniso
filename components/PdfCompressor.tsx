@@ -289,7 +289,7 @@ return (
                     e.target.value as CompressionLevel
                 )
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-3 sm:text-gray-700"
             >
                 <option value="low">
                 Low Compression
