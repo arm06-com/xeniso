@@ -159,15 +159,20 @@ export default function BackgroundRemover() {
         setResultPreview(url);
 
         setProgress(100);
-    } catch (error) {
-        console.error(error);
+    } catch (error: any) {
+        console.error(
+          "Background removal error:",
+          error
+        );
 
         alert(
-        "Failed to remove background."
+          error?.message ||
+          "Failed to remove background."
         );
     } finally {
         setIsRemoving(false);
-    }
+        setProgress(0); 
+        }
   };
  // Apply Background Color
   const applyBackground = () => {
