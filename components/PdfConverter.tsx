@@ -252,7 +252,7 @@ export default function PdfConverter() {
               onChange={(e) =>
                 setPageFormat(e.target.value as "a4" | "letter")
               }
-              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3 sm:text-gray-700"
+              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3"
             >
               <option value="a4">A4</option>
               <option value="letter">Letter</option>
@@ -271,7 +271,7 @@ export default function PdfConverter() {
                   e.target.value as "portrait" | "landscape"
                 )
               }
-              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3 sm:text-gray-700"
+              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3"
             >
               <option value="portrait">Portrait</option>
               <option value="landscape">Landscape</option>

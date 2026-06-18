@@ -141,11 +141,11 @@ export default function AboutPage() {
       {/* Current Tools */}
       <section className="mt-12 sm:mt-16 lg:mt-20">
 
-        <h2 className="text-2xl sm:text-3xl font-bold sm:text-black">
+        <h2 className="text-2xl sm:text-3xl font-bold">
           Tools Available Today
         </h2>
 
-        <div className="mt-6 sm:bg-gray-800 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
+        <div className="mt-6 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
 
           {[
             "PDF Compressor",
@@ -181,7 +181,9 @@ export default function AboutPage() {
           expanding with new PDF, image, and productivity
           tools designed to simplify your digital workflow.
         </p>
+
       </section>
+
     </main>
   );
 }

@@ -234,7 +234,7 @@ export default function BackgroundRemover() {
               : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-lg sm:text-2xl font-semibold sm:text-black">
+          <h2 className="text-lg sm:text-2xl font-semibold">
             Drag & Drop Your Image
           </h2>
 

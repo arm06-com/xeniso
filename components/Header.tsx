@@ -221,7 +221,7 @@ export default function Header() {
           </nav>
 
           {/* Search */}
-          <div className="hidden xl:block ml-6 flex-shrink-0">
+          <div className="hidden xl:block ml-6 shrink-0">
             <ToolSearch />
           </div>
 

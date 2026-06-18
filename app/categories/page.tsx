@@ -102,7 +102,7 @@ export default function CategoriesPage() {
 
               <div>
 
-                <h2 className="text-2xl sm:text-3xl font-bold sm:text-black">
+                <h2 className="text-2xl sm:text-3xl font-bold">
                   {category.title}
                 </h2>
 
@@ -125,7 +125,7 @@ export default function CategoriesPage() {
                   className="group border rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:border-sky-200 transition-all duration-300 bg-white flex flex-col justify-between min-h-35"
                 >
 
-                  <h3 className="font-semibold text-base sm:text-lg sm:text-black">
+                  <h3 className="font-semibold text-base sm:text-lg">
                     {tool.name}
                   </h3>
 
@@ -148,7 +148,7 @@ export default function CategoriesPage() {
       {/* Coming Soon */}
       <section className="mt-12 sm:mt-16 lg:mt-20 bg-gray-50 rounded-2xl lg:rounded-3xl p-6 sm:p-8 lg:p-12 text-center">
 
-        <h2 className="text-2xl sm:text-3xl font-bold sm:text-black">
+        <h2 className="text-2xl sm:text-3xl font-bold">
           More Categories Coming Soon
         </h2>
 
@@ -159,23 +159,23 @@ export default function CategoriesPage() {
 
         <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
 
-          <span className="bg-white sm:bg-gray-800 border px-4 py-2 rounded-full text-sm sm:text-base">
+          <span className="bg-white border px-4 py-2 rounded-full text-sm sm:text-base">
             PDF Conversion
           </span>
 
-          <span className="bg-white sm:bg-gray-800 border px-4 py-2 rounded-full text-sm sm:text-base">
+          <span className="bg-white border px-4 py-2 rounded-full text-sm sm:text-base">
             AI Tools
           </span>
 
-          <span className="bg-white sm:bg-gray-800 border px-4 py-2 rounded-full text-sm sm:text-base">
+          <span className="bg-white border px-4 py-2 rounded-full text-sm sm:text-base">
             Document Editing
           </span>
 
-          <span className="bg-white sm:bg-gray-800 border px-4 py-2 rounded-full text-sm sm:text-base">
+          <span className="bg-white border px-4 py-2 rounded-full text-sm sm:text-base">
             Image Enhancement
           </span>
 
-          <span className="bg-white sm:bg-gray-800 border px-4 py-2 rounded-full text-sm sm:text-base">
+          <span className="bg-white border px-4 py-2 rounded-full text-sm sm:text-base">
             Productivity Tools
           </span>
 
