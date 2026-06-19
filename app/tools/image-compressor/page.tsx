@@ -88,8 +88,12 @@ export default function ImageCompressorPage() {
             Drag & Drop Your Image
           </h2>
 
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-orange-500">
             or click to select a file
+          </p>
+
+          <p className="mt-2 text-orange-500">
+            Compress expected image in a second.
           </p>
 
           <input
@@ -176,7 +180,7 @@ export default function ImageCompressorPage() {
           How to Use
         </h2>
 
-        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-400">
+        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-500">
           <li>Drag and drop your image.</li>
           <li>Wait a few seconds.</li>
           <li>Review the compressed result.</li>

@@ -69,7 +69,7 @@ export default function ToolsPage() {
       {/* Header */}
       <section className="text-center">
 
-        <h1 className="text-5xl font-bold">
+        <h1 className="text-5xl font-bold text-black">
           All Xeniso Tools
         </h1>
 
@@ -87,7 +87,7 @@ export default function ToolsPage() {
 
           <section key={category.title}>
 
-            <h2 className="text-3xl font-bold mb-8">
+            <h2 className="text-3xl font-bold mb-8 text-black">
               {category.title}
             </h2>
 
@@ -101,7 +101,7 @@ export default function ToolsPage() {
                   className="bg-white border rounded-2xl p-8 hover:shadow-xl transition"
                 >
 
-                  <h3 className="text-xl font-semibold">
+                  <h3 className="text-xl font-semibold text-black">
                     {tool.name}
                   </h3>
 
@@ -109,7 +109,7 @@ export default function ToolsPage() {
                     {tool.description}
                   </p>
 
-                  <div className="mt-6 font-medium">
+                  <div className="mt-6 font-medium text-black">
                     Open Tool →
                   </div>
 
@@ -127,7 +127,7 @@ export default function ToolsPage() {
 
       <section className="mt-24 bg-gray-50 rounded-3xl p-12 text-center">
 
-        <h2 className="text-3xl font-bold">
+        <h2 className="text-3xl font-bold text-black">
             More Tools Coming Soon
         </h2>
 
@@ -138,31 +138,31 @@ export default function ToolsPage() {
 
         <div className="mt-10 flex flex-wrap justify-center gap-4">
 
-            <span className="bg-white border px-4 py-2 rounded-full">
+            <span className="bg-white border px-4 py-2 rounded-full text-black">
             PDF to JPG
             </span>
 
-            <span className="bg-white border px-4 py-2 rounded-full">
+            <span className="bg-white border px-4 py-2 rounded-full text-black">
             JPG to PDF
             </span>
 
-            <span className="bg-white border px-4 py-2 rounded-full">
+            <span className="bg-white border px-4 py-2 rounded-full text-black">
             PDF to Word
             </span>
 
-            <span className="bg-white border px-4 py-2 rounded-full">
+            <span className="bg-white border px-4 py-2 rounded-full text-black">
             Image Cropper
             </span>
 
-            <span className="bg-white border px-4 py-2 rounded-full">
+            <span className="bg-white border px-4 py-2 rounded-full text-black">
             Image Upscaler
             </span>
 
-            <span className="bg-white border px-4 py-2 rounded-full">
+            <span className="bg-white border px-4 py-2 rounded-full text-black">
             Signature Generator
             </span>
 
-            <span className="bg-white border px-4 py-2 rounded-full">
+            <span className="bg-white border px-4 py-2 rounded-full text-black">
             Seal Maker
             </span>
 

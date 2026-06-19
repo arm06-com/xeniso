@@ -109,11 +109,11 @@ export default function QRGeneratorPage() {
 
       {/* How To Use */}
       <section>
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-2xl font-bold text-black">
           How to Use
         </h2>
 
-        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-400">
+        <ol className="list-decimal pl-6 mt-4 space-y-2 text-gray-600">
           <li>Enter your URL or text.</li>
           <li>Click Generate QR Code.</li>
           <li>Preview your QR code instantly.</li>

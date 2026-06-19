@@ -19,7 +19,7 @@ export default function ContactPage() {
       {/* Hero */}
       <section className="text-center">
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-black">
           Contact Us
         </h1>
 
@@ -38,10 +38,10 @@ export default function ContactPage() {
 
           <Mail
             size={40}
-            className="mb-5 sm:mb-6"
+            className="mb-5 sm:mb-6 text-gray-600"
           />
 
-          <h2 className="text-xl sm:text-2xl font-bold">
+          <h2 className="text-xl sm:text-2xl font-bold text-black">
             Email Support
           </h2>
 
@@ -63,10 +63,10 @@ export default function ContactPage() {
 
           <MessageSquare
             size={40}
-            className="mb-5 sm:mb-6"
+            className="mb-5 sm:mb-6 text-gray-600"
           />
 
-          <h2 className="text-xl sm:text-2xl font-bold">
+          <h2 className="text-xl sm:text-2xl font-bold text-black">
             Business Inquiries
           </h2>
 
@@ -96,12 +96,12 @@ export default function ContactPage() {
 
             <Clock
               size={32}
-              className="mt-1 flex-shrink-0"
+              className="mt-1 shrink-0 text-gray-600"
             />
 
             <div>
 
-              <h3 className="text-lg sm:text-xl font-semibold">
+              <h3 className="text-lg sm:text-xl font-semibold text-black">
                 Response Time
               </h3>
 
@@ -118,12 +118,12 @@ export default function ContactPage() {
 
             <HelpCircle
               size={32}
-              className="mt-1 flex-shrink-0"
+              className="mt-1 shrink-0 text-gray-600"
             />
 
             <div>
 
-              <h3 className="text-lg sm:text-xl font-semibold">
+              <h3 className="text-lg sm:text-xl font-semibold text-black">
                 Before Contacting Us
               </h3>
 

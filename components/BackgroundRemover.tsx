@@ -46,6 +46,9 @@ export default function BackgroundRemover() {
   const [croppedPreview, setCroppedPreview] =
     useState<string | null>(null);
 
+  const [edgeSmoothness, setEdgeSmoothness] =
+  useState(0.5);
+
   useEffect(() => {
     return () => {
       if (downloadUrl) URL.revokeObjectURL(downloadUrl);
@@ -54,7 +57,12 @@ export default function BackgroundRemover() {
 
   useEffect(() => {
     applyBackground();
-  }, [resultPreview, backgroundType, customColor]);
+  }, [
+    resultPreview,
+    backgroundType,
+    customColor,
+    edgeSmoothness,
+  ]);
 
   useEffect(() => {
     const updateCrop = async () => {
@@ -158,7 +166,9 @@ export default function BackgroundRemover() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
+      ctx.filter = `blur(${edgeSmoothness}px)`;
       ctx.drawImage(img, 0, 0);
+      ctx.filter = "none";
 
       setBackgroundPreview(canvas.toDataURL("image/png"));
     };
@@ -234,11 +244,11 @@ export default function BackgroundRemover() {
               : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-lg sm:text-2xl font-semibold">
+          <h2 className="text-lg sm:text-2xl font-semibold text-black">
             Drag & Drop Your Image
           </h2>
 
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
+          <p className="mt-2 text-sm sm:text-base text-orange-500">
             or click to select a file
           </p>
 
@@ -265,7 +275,7 @@ export default function BackgroundRemover() {
           <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
 
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-black">
                 Original Image
               </h2>
 
@@ -278,27 +288,30 @@ export default function BackgroundRemover() {
             <div className="space-y-4 sm:space-y-6">
 
               <div>
-                <span className="font-semibold">File Name:</span>
+                <span className="font-semibold text-gray-600">File Name:</span>
                 <p className="text-gray-600 break-all text-sm sm:text-base">
                   {file.name}
                 </p>
               </div>
 
               <div>
-                <span className="font-semibold">File Size:</span>
+                <span className="font-semibold text-gray-600">File Size:</span>
                 <p className="text-gray-600 text-sm sm:text-base">
                   {(file.size / 1024).toFixed(1)} KB
                 </p>
               </div>
 
-              <button className="w-full bg-gray-100 py-3 rounded-lg text-sm sm:text-base">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full bg-gray-100 hover:bg-gray-200 py-3 rounded-lg text-sm text-black transition"
+              >
                 Replace Image
               </button>
 
               <button
                 onClick={handleRemoveBackground}
                 disabled={isRemoving}
-                className="w-full bg-black text-white py-3 rounded-lg text-sm sm:text-base"
+                className="w-full bg-black hover:bg-gray-600 text-white py-3 rounded-lg text-sm sm:text-base"
               >
                 {isRemoving ? "Removing..." : "Remove Background"}
               </button>
@@ -323,15 +336,30 @@ export default function BackgroundRemover() {
       {resultPreview && preview && (
         <section className="bg-white border rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-md">
 
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-black">
             Compare Results
           </h2>
 
           <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <button className="px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg">
+            <button
+              onClick={() => setActiveTab("compare")}
+              className={`px-3 sm:px-4 py-2 text-sm rounded-lg border ${
+                activeTab === "compare"
+                  ? "bg-black text-white"
+                  : "text-gray-600"
+              }`}
+            >
               Compare
             </button>
-            <button className="px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg">
+
+            <button
+              onClick={() => setActiveTab("crop")}
+              className={`px-3 sm:px-4 py-2 text-sm rounded-lg border ${
+                activeTab === "crop"
+                  ? "bg-black text-white"
+                  : "text-gray-600"
+              }`}
+            >
               Crop
             </button>
           </div>
@@ -339,33 +367,195 @@ export default function BackgroundRemover() {
           <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
 
             <div className="lg:col-span-2">
+              {activeTab === "compare" ? (
               <div className="rounded-xl overflow-hidden">
                 <ReactCompareSlider
-                  className="h-62.5 sm:h-75 lg:h-125"
+                  className="h-90 sm:h-125 lg:h-190"
                   itemOne={<ReactCompareSliderImage src={preview} />}
                   itemTwo={<ReactCompareSliderImage src={backgroundPreview || resultPreview} />}
                 />
               </div>
+              ) : (
+                <div className="relative h-75 sm:h-100 lg:h-125 rounded-xl overflow-hidden border bg-gray-100">
+                  <Cropper
+                    image={
+                      backgroundPreview ||
+                      resultPreview
+                    }
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={aspect}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={(
+                      _,
+                      croppedAreaPixels
+                    ) =>
+                      setCroppedAreaPixels(
+                        croppedAreaPixels
+                      )
+                    }
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-4 sm:space-y-6">
 
               <div>
-                <label className="block font-medium">Background</label>
+                <label className="block font-medium text-black">Background</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {["transparent", "white", "black", "custom"].map((type) => (
                     <button
                       key={type}
-                      className="px-3 py-2 border rounded-lg text-sm"
+                      onClick={() =>
+                        setBackgroundType(
+                          type as
+                            | "transparent"
+                            | "white"
+                            | "black"
+                            | "custom"
+                        )
+                      }
+                      className={`px-3 py-2 rounded-lg border text-sm ${
+                        backgroundType === type
+                          ? "bg-black text-white"
+                          : "text-gray-600"
+                      }`}
                     >
                       {type}
                     </button>
                   ))}
+                  {backgroundType === "custom" && (
+                    <input
+                      type="color"
+                      value={customColor}
+                      onChange={(e) =>
+                        setCustomColor(e.target.value)
+                      }
+                      className="mt-4 h-12 w-full cursor-pointer"
+                    />
+                  )}
                 </div>
               </div>
 
+              <div>
+                <label className="block font-medium mb-2 text-black">
+                  Edge Smoothness ({edgeSmoothness.toFixed(1)}px)
+                </label>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={edgeSmoothness}
+                  onChange={(e) =>
+                    setEdgeSmoothness(
+                      Number(e.target.value)
+                    )
+                  }
+                  className="w-full"
+                />
+
+                <p className="text-xs text-gray-500 mt-1">
+                  Helps reduce white edges after
+                  background removal.
+                </p>
+              </div>
+
+              {activeTab === "crop" && (
+                <>
+                  <label className="block font-medium text-black">
+                    Crop Ratio
+                  </label>
+
+                  <select
+                    className="w-full border rounded-lg px-4 py-3"
+                    onChange={(e) => {
+                      switch (e.target.value) {
+                        case "passport":
+                          setAspect(35 / 45);
+                          break;
+
+                        case "stamp":
+                          setAspect(1);
+                          break;
+
+                        case "instagram":
+                          setAspect(1);
+                          break;
+
+                        case "youtube":
+                          setAspect(16 / 9);
+                          break;
+
+                        default:
+                          setAspect(undefined);
+                      }
+                    }}
+                  >
+                    <option value="free">Free</option>
+                    <option value="passport">
+                      Passport
+                    </option>
+                    <option value="stamp">
+                      Stamp
+                    </option>
+                    <option value="instagram">
+                      Instagram
+                    </option>
+                    <option value="youtube">
+                      YouTube
+                    </option>
+                  </select>
+
+                  <div>
+                    <label className="block font-medium mb-2">
+                      Zoom ({zoom.toFixed(1)}x)
+                    </label>
+
+                    <input
+                      type="range"
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      value={zoom}
+                      onChange={(e) =>
+                        setZoom(
+                          Number(e.target.value)
+                        )
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                </>
+              )}
+
             </div>
           </div>
+
+          <button
+            onClick={() => {
+              const link =
+                document.createElement("a");
+
+              link.href =
+                activeTab === "crop" &&
+                croppedPreview
+                  ? croppedPreview
+                  : backgroundPreview ||
+                    downloadUrl!;
+
+              link.download =
+                "background-removed.png";
+
+              link.click();
+            }}
+            className="mt-6 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium"
+          >
+            Download PNG
+          </button>
 
         </section>
       )}

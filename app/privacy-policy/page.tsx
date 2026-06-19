@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
       {/* Header */}
       <section>
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-black">
           Privacy Policy
         </h1>
 

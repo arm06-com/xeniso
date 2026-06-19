@@ -13,7 +13,7 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="text-center">
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-black">
           About Xeniso
         </h1>
 
@@ -27,7 +27,7 @@ export default function AboutPage() {
       {/* Our Story */}
       <section className="mt-12 sm:mt-16 lg:mt-20">
 
-        <h2 className="text-2xl sm:text-3xl font-bold">
+        <h2 className="text-2xl sm:text-3xl font-bold text-black">
           Our Story
         </h2>
 
@@ -60,7 +60,7 @@ export default function AboutPage() {
       {/* Mission */}
       <section className="mt-12 sm:mt-16 lg:mt-20 bg-gray-50 rounded-2xl lg:rounded-3xl p-6 sm:p-8 lg:p-10">
 
-        <h2 className="text-2xl sm:text-3xl font-bold">
+        <h2 className="text-2xl sm:text-3xl font-bold text-black">
           Our Mission
         </h2>
 
@@ -75,7 +75,7 @@ export default function AboutPage() {
       {/* Values */}
       <section className="mt-12 sm:mt-16 lg:mt-20">
 
-        <h2 className="text-2xl sm:text-3xl font-bold">
+        <h2 className="text-2xl sm:text-3xl font-bold text-black">
           What We Believe
         </h2>
 
@@ -83,7 +83,7 @@ export default function AboutPage() {
 
           <div className="border rounded-2xl p-5 sm:p-6 lg:p-8 hover:shadow-md transition-shadow">
 
-            <h3 className="text-lg sm:text-xl font-semibold">
+            <h3 className="text-lg sm:text-xl font-semibold text-black">
               Privacy First
             </h3>
 
@@ -97,7 +97,7 @@ export default function AboutPage() {
 
           <div className="border rounded-2xl p-5 sm:p-6 lg:p-8 hover:shadow-md transition-shadow">
 
-            <h3 className="text-lg sm:text-xl font-semibold">
+            <h3 className="text-lg sm:text-xl font-semibold text-black">
               Simplicity
             </h3>
 
@@ -110,7 +110,7 @@ export default function AboutPage() {
 
           <div className="border rounded-2xl p-5 sm:p-6 lg:p-8 hover:shadow-md transition-shadow">
 
-            <h3 className="text-lg sm:text-xl font-semibold">
+            <h3 className="text-lg sm:text-xl font-semibold text-black">
               Accessibility
             </h3>
 
@@ -123,7 +123,7 @@ export default function AboutPage() {
 
           <div className="border rounded-2xl p-5 sm:p-6 lg:p-8 hover:shadow-md transition-shadow">
 
-            <h3 className="text-lg sm:text-xl font-semibold">
+            <h3 className="text-lg sm:text-xl font-semibold text-black">
               Continuous Improvement
             </h3>
 
@@ -141,7 +141,7 @@ export default function AboutPage() {
       {/* Current Tools */}
       <section className="mt-12 sm:mt-16 lg:mt-20">
 
-        <h2 className="text-2xl sm:text-3xl font-bold">
+        <h2 className="text-2xl sm:text-3xl font-bold text-black">
           Tools Available Today
         </h2>
 
@@ -159,7 +159,7 @@ export default function AboutPage() {
           ].map((tool) => (
             <span
               key={tool}
-              className="bg-gray-100 px-4 sm:px-5 py-2 sm:py-3 rounded-full text-sm sm:text-base"
+              className="bg-gray-100 px-4 sm:px-5 py-2 sm:py-3 rounded-full text-sm text-black"
             >
               {tool}
             </span>

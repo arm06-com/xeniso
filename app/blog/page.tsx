@@ -15,7 +15,7 @@ export default function BlogPage() {
 
       <section className="text-center">
 
-        <h1 className="text-5xl font-bold">
+        <h1 className="text-5xl font-bold text-black">
           Xeniso Blog
         </h1>
 
@@ -33,11 +33,11 @@ export default function BlogPage() {
             key={post.slug}
             className="border rounded-3xl p-8 hover:shadow-lg transition"
           >
-            <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-sm">
+            <span className="inline-block px-3 py-1 bg-gray-100 text-black rounded-full text-sm">
               {post.category}
             </span>
 
-            <h2 className="mt-4 text-2xl font-bold">
+            <h2 className="mt-4 text-2xl font-bold text-black">
               {post.title}
             </h2>
 
@@ -52,7 +52,7 @@ export default function BlogPage() {
 
             <Link
               href={`/blog/${post.slug}`}
-              className="inline-block mt-6 font-medium hover:underline"
+              className="inline-block mt-6 font-medium hover:underline text-shadow-green-800"
             >
               Read More →
             </Link>

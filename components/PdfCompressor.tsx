@@ -205,7 +205,7 @@ return (
           Drag & Drop PDF
         </h2>
 
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-orange-500">
           or click to select a PDF
         </p>
 
@@ -289,7 +289,7 @@ return (
                     e.target.value as CompressionLevel
                 )
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-3 text-gray-500"
             >
                 <option value="low">
                 Low Compression
@@ -316,7 +316,7 @@ return (
             <button
             onClick={compressPdf}
             disabled={isCompressing}
-            className="w-full bg-black text-white py-3 rounded-lg font-medium disabled:bg-gray-400"
+            className="w-full bg-black hover:bg-gray-600 text-white py-3 rounded-lg font-medium disabled:bg-gray-400"
             >
             {isCompressing
                 ? "Compressing..."

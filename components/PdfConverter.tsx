@@ -183,7 +183,7 @@ export default function PdfConverter() {
             Drag & Drop Images
           </h2>
 
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
+          <p className="mt-2 text-sm sm:text-base text-orange-500">
             or click to select images
           </p>
 
@@ -252,7 +252,7 @@ export default function PdfConverter() {
               onChange={(e) =>
                 setPageFormat(e.target.value as "a4" | "letter")
               }
-              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3"
+              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-gray-600"
             >
               <option value="a4">A4</option>
               <option value="letter">Letter</option>
@@ -271,7 +271,7 @@ export default function PdfConverter() {
                   e.target.value as "portrait" | "landscape"
                 )
               }
-              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3"
+              className="w-full border rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-gray-600"
             >
               <option value="portrait">Portrait</option>
               <option value="landscape">Landscape</option>
@@ -316,7 +316,7 @@ export default function PdfConverter() {
           <button
             onClick={convertToPdf}
             disabled={isConverting}
-            className="w-full bg-black text-white py-3 rounded-lg font-medium disabled:bg-gray-400"
+            className="w-full bg-black hover:bg-gray-600 text-white py-3 rounded-lg font-medium disabled:bg-gray-400"
           >
             {isConverting ? "Creating PDF..." : "Convert to PDF"}
           </button>

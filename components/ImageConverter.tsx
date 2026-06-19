@@ -193,11 +193,11 @@ export default function ImageConverter({
             isDragging ? "border-black bg-gray-50" : "border-gray-300 hover:bg-gray-50"
           }`}
         >
-          <h2 className="text-xl sm:text-2xl font-semibold">
+          <h2 className="text-xl sm:text-2xl font-semibold text-black">
             Drag & Drop Your Image
           </h2>
 
-          <p className="mt-2 text-gray-600 text-sm sm:text-base">
+          <p className="mt-2 text-orange-500 text-sm sm:text-base">
             or click to select a file
           </p>
 
@@ -226,7 +226,7 @@ export default function ImageConverter({
 
             {/* LEFT */}
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-black">
                 Original Image
               </h2>
 
@@ -236,13 +236,13 @@ export default function ImageConverter({
                 alt="original"
               />
 
-              <div className="mt-6 space-y-3 text-sm sm:text-base">
+              <div className="mt-6 space-y-3 text-sm text-gray-700">
                 <p><span className="font-semibold">Format:</span> {inputFormat}</p>
                 <p className="break-all"><span className="font-semibold">Name:</span> {file.name}</p>
                 <p><span className="font-semibold">Size:</span> {(file.size / 1024).toFixed(1)} KB</p>
 
                 <select
-                  className="w-full border rounded-lg px-4 py-3 mt-2"
+                  className="w-full border rounded-lg px-4 py-3 mt-2 text-gray-600"
                   value={outputFormat}
                   onChange={(e) =>
                     setOutputFormat(e.target.value as SupportedFormat)
@@ -260,7 +260,7 @@ export default function ImageConverter({
                 <button
                   onClick={convertImage}
                   disabled={isConverting}
-                  className="w-full bg-black text-white py-3 rounded-lg mt-3 disabled:bg-gray-400"
+                  className="w-full bg-black hover:bg-gray-600 text-white py-3 rounded-lg mt-3 disabled:bg-gray-400"
                 >
                   {isConverting
                     ? "Converting..."
@@ -283,7 +283,7 @@ export default function ImageConverter({
 
             {/* RIGHT */}
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-black">
                 Converted Image
               </h2>
 
@@ -302,7 +302,7 @@ export default function ImageConverter({
               {convertedPreview && (
                 <button
                   onClick={downloadConvertedImage}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg mt-6"
+                  className="w-full bg-green-600 hover:bg-gray-800 text-white py-3 rounded-lg mt-6"
                 >
                   Download Converted Image
                 </button>

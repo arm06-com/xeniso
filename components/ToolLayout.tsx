@@ -17,7 +17,7 @@ export default function ToolLayout({
     <main className="max-w-7xl mx-auto px-6 py-12">
       {/* Header */}
       <section className="text-center mb-12">
-        <h1 className="text-4xl font-bold">{title}</h1>
+        <h1 className="text-4xl font-bold text-black">{title}</h1>
 
         <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
           {description}

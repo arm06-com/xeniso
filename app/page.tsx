@@ -108,7 +108,7 @@ export default function HomePage() {
 
         <div className="text-center">
 
-          <h2 className="text-4xl font-bold">
+          <h2 className="text-4xl font-bold text-black">
             Popular Tools
           </h2>
 
@@ -201,7 +201,7 @@ export default function HomePage() {
 
         <div className="text-center">
 
-          <h2 className="text-4xl font-bold">
+          <h2 className="text-4xl font-bold text-black">
             Why Choose Xeniso?
           </h2>
 
@@ -216,7 +216,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-14">
 
           <div className="border rounded-2xl p-8">
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-xl font-semibold text-black">
               Privacy First
             </h3>
 
@@ -227,7 +227,7 @@ export default function HomePage() {
           </div>
 
           <div className="border rounded-2xl p-8">
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-xl font-semibold text-black">
               Completely Free
             </h3>
 
@@ -238,7 +238,7 @@ export default function HomePage() {
           </div>
 
           <div className="border rounded-2xl p-8">
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-xl font-semibold text-black">
               Fast Processing
             </h3>
 
@@ -249,7 +249,7 @@ export default function HomePage() {
           </div>
 
           <div className="border rounded-2xl p-8">
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-xl font-semibold text-black">
               Easy to Use
             </h3>
 
@@ -298,7 +298,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-6 py-20">
 
         <div className="text-center">
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-3xl font-bold text-black">
             How Xeniso Works
           </h2>
 
@@ -310,11 +310,11 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 mt-14">
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-gray-300 text-black flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-black text-white flex items-center justify-center mx-auto text-xl font-bold">
               1
             </div>
 
-            <h3 className="mt-6 text-xl font-semibold">
+            <h3 className="mt-6 text-xl font-semibold text-black">
               Upload
             </h3>
 
@@ -324,11 +324,11 @@ export default function HomePage() {
           </div>
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-gray-300 text-black flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-black text-white flex items-center justify-center mx-auto text-xl font-bold">
               2
             </div>
 
-            <h3 className="mt-6 text-xl font-semibold">
+            <h3 className="mt-6 text-xl font-semibold text-black">
               Process
             </h3>
 
@@ -338,11 +338,11 @@ export default function HomePage() {
           </div>
 
           <div className="text-center border rounded-2xl p-10">
-            <div className="w-14 h-14 rounded-full bg-gray-300 text-black flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-14 h-14 rounded-full bg-black text-white flex items-center justify-center mx-auto text-xl font-bold">
               3
             </div>
 
-            <h3 className="mt-6 text-xl font-semibold">
+            <h3 className="mt-6 text-xl font-semibold text-black">
               Download
             </h3>
 
@@ -419,7 +419,7 @@ export default function HomePage() {
 
         <div className="text-center">
 
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-3xl font-bold text-black">
             Frequently Asked Questions
           </h2>
 
@@ -428,7 +428,7 @@ export default function HomePage() {
         <div className="mt-12 space-y-8">
 
           <div>
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-semibold text-lg text-black">
               Is Xeniso free to use?
             </h3>
 
@@ -438,7 +438,7 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-semibold text-lg text-black">
               Do I need to create an account?
             </h3>
 
@@ -448,7 +448,7 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-semibold text-lg text-black">
               Are my files secure?
             </h3>
 
@@ -458,7 +458,7 @@ export default function HomePage() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-semibold text-lg text-black">
               Which file formats are supported?
             </h3>
 

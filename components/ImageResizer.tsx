@@ -213,7 +213,7 @@ export default function ImageResizer() {
             Drag & Drop Image to Resize
           </h2>
 
-          <p className="mt-2 text-gray-600 text-sm sm:text-base">
+          <p className="mt-2 text-orange-500 text-sm sm:text-base">
             or click to select
           </p>
 
@@ -251,7 +251,7 @@ export default function ImageResizer() {
               <select
                 value={selectedPreset}
                 onChange={(e) => handlePresetChange(e.target.value)}
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-3 text-gray-700"
               >
                 {presets.map((p) => (
                   <option key={p.name} value={p.name}>
@@ -271,7 +271,7 @@ export default function ImageResizer() {
                 onChange={(e) =>
                   handlePercentageChange(Number(e.target.value))
                 }
-                className="w-full border rounded-lg px-4 py-3"
+                className="w-full border rounded-lg px-4 py-3 text-gray-600"
               >
                 {[25, 50, 75, 100, 150, 200].map((p) => (
                   <option key={p} value={p}>
@@ -296,7 +296,7 @@ export default function ImageResizer() {
               type="number"
               value={width}
               onChange={(e) => handleWidthChange(Number(e.target.value))}
-              className="w-full border rounded-lg px-4 py-3"
+              className="w-full border rounded-lg px-4 py-3 text-gray-600"
               placeholder="Width"
             />
 
@@ -304,7 +304,7 @@ export default function ImageResizer() {
               type="number"
               value={height}
               onChange={(e) => handleHeightChange(Number(e.target.value))}
-              className="w-full border rounded-lg px-4 py-3"
+              className="w-full border rounded-lg px-4 py-3 text-gray-600"
               placeholder="Height"
             />
 
@@ -312,7 +312,7 @@ export default function ImageResizer() {
               <button
                 onClick={resizeImage}
                 disabled={isResizing}
-                className="w-full bg-black text-white py-3 rounded-lg disabled:bg-gray-400"
+                className="w-full bg-black hover-gray-600 text-white py-3 rounded-lg disabled:bg-gray-400"
               >
                 {isResizing ? "Resizing..." : "Resize Image"}
               </button>
@@ -336,7 +336,7 @@ export default function ImageResizer() {
       {/* RESULT */}
       {resizedPreview && (
         <section className="bg-white border rounded-2xl p-6 sm:p-8 shadow-md">
-          <h2 className="text-xl sm:text-2xl font-bold mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 text-black">
             Resized Image
           </h2>
 
@@ -347,7 +347,7 @@ export default function ImageResizer() {
               className="w-full max-h-100 object-contain rounded-xl border"
             />
 
-            <div className="space-y-3 text-sm sm:text-base">
+            <div className="space-y-3 text-sm text-gray-600">
 
               <p><strong>Size:</strong> {width} × {height}px</p>
               <p><strong>File:</strong> {resizedSize ? `${(resizedSize / 1024).toFixed(1)} KB` : "-"}</p>
@@ -362,7 +362,7 @@ export default function ImageResizer() {
 
               <button
                 onClick={downloadResizedImage}
-                className="w-full bg-green-600 text-white py-3 rounded-lg"
+                className="w-full bg-green-600 hover:bg-gray-800 text-white py-3 rounded-lg"
               >
                 Download
               </button>

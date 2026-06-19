@@ -212,8 +212,11 @@ function PdfSplitter() {
             Drag & Drop PDF
           </h2>
 
-          <p className="mt-2 text-sm md:text-base text-gray-600">
+          <p className="mt-2 text-sm md:text-base text-orange-500">
             or click to select a PDF
+          </p>
+          <p className="mt-2 text-sm md:text-base text-gray-500">
+            Split PDF instantly in a second
           </p>
 
           <input
@@ -321,7 +324,7 @@ function PdfSplitter() {
           <button
             onClick={splitPdf}
             disabled={isProcessing}
-            className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium"
+            className="w-full bg-gray-900 hover:bg-gray-600 text-white py-3 rounded-lg font-medium"
           >
             {isProcessing ? "Processing..." : "Split PDF"}
           </button>

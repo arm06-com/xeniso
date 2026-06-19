@@ -11,11 +11,11 @@ export default function NotFound() {
       <div className="max-w-2xl text-center">
 
         {/* 404 */}
-        <p className="text-8xl md:text-9xl font-bold text-gray-200">
+        <p className="text-8xl md:text-9xl font-bold text-gray-400">
           404
         </p>
 
-        <h1 className="mt-4 text-4xl md:text-5xl font-bold">
+        <h1 className="mt-4 text-4xl md:text-5xl font-bold text-black">
           Page Not Found
         </h1>
 
@@ -37,7 +37,7 @@ export default function NotFound() {
 
           <Link
             href="/tools"
-            className="inline-flex items-center justify-center gap-2 border border-gray-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition"
+            className="inline-flex items-center justify-center gap-2 border border-gray-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition text-black"
           >
             <Search size={20} />
             Browse Tools
@@ -79,7 +79,7 @@ export default function NotFound() {
               <Link
                 key={tool.href}
                 href={tool.href}
-                className="px-4 py-2 bg-gray-100 rounded-full text-sm hover:bg-gray-200 transition"
+                className="px-4 py-2 bg-gray-100 text-black rounded-full text-sm hover:bg-gray-200 transition"
               >
                 {tool.label}
               </Link>
