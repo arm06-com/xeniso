@@ -153,7 +153,7 @@ export default function HomePage() {
 
             <div>
               <h3 className="text-black text-4xl font-bold">
-                7+
+                9+
               </h3>
 
               <p className="mt-2 text-gray-600">

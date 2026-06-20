@@ -16,6 +16,10 @@ const categories = [
         name: "PDF Splitter",
         href: "/tools/pdf-splitter",
       },
+      {
+        name: "Image to PDF",
+        href: "/tools/pdf-converter",
+      },
     ],
   },
 
