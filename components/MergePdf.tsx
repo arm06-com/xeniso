@@ -443,7 +443,7 @@ export default function MergePdf() {
 
         <iframe
           src={mergedPdfUrl}
-          className="w-full h-[600px] border rounded-lg"
+          className="w-full h-150 border rounded-lg"
         />
 
         <a
