@@ -20,6 +20,10 @@ const categories = [
         name: "Image to PDF",
         href: "/tools/pdf-converter",
       },
+      {
+        name: "Merge PDF",
+        href: "/tools/merge-pdf",
+      },
     ],
   },
 

@@ -16,6 +16,12 @@ const toolCategories = [
           "Extract selected pages or split PDFs instantly.",
         href: "/tools/pdf-splitter",
       },
+      {
+        name: "Merge PDF",
+        description:
+          "Merge multiple PDF in a single pdf file in a minute.",
+        href: "/tools/merge-pdf",
+      },
     ],
   },
 

@@ -18,6 +18,11 @@ const tools = [
     href: "/tools/pdf-splitter",
   },
   {
+    title: "Merge PDF",
+    description: "Merge multiple pdf in a single file.",
+    href: "/tools/merge-pdf",
+  },
+  {
     title: "Image Compressor",
     description: "Compress JPG, PNG and WebP.",
     href: "/tools/image-compressor",

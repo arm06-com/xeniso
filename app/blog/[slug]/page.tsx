@@ -1,51 +1,37 @@
 import { notFound } from "next/navigation";
-import { blogPosts } from "@/data/blogPosts";
+import ReactMarkdown from "react-markdown";
+import { blogs } from "@/data/blogs";
 
-type Props = {
-  params: {
-    slug: string;
-  };
-};
-
-export default function BlogPostPage({
+export default async function BlogPost({
   params,
-}: Props) {
-  const post = blogPosts.find(
-    (p) => p.slug === params.slug
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
+  const blog = blogs.find(
+    (post) => post.slug === slug
   );
 
-  if (!post) {
+  if (!blog) {
     notFound();
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-16">
+    <div className="container mx-auto max-w-4xl py-10 px-4">
 
-      <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-sm">
-        {post.category}
-      </span>
-
-      <h1 className="mt-6 text-5xl font-bold">
-        {post.title}
+      <h1 className="text-4xl font-bold mb-4">
+        {blog.title}
       </h1>
 
-      <div className="mt-6 text-gray-500">
-        {post.date} • {post.readTime}
-      </div>
+      <p className="text-gray-500 mb-8">
+        {blog.publishedAt}
+      </p>
 
-      <article className="prose prose-lg max-w-none mt-12">
-
-        <p>
-          Blog content will go here.
-        </p>
-
-        <p>
-          Later, we can connect this to Markdown,
-          MDX, a CMS, or a database.
-        </p>
-
+      <article className="prose max-w-none">
+        <ReactMarkdown>{blog.content}</ReactMarkdown>
       </article>
 
-    </main>
+    </div>
   );
 }

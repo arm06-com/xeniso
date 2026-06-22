@@ -32,6 +32,12 @@ export default function ToolSidebar() {
               PDF Splitter 
             </Link>
             <Link
+              href="/tools/merge-pdf"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
+            >
+              Merge PDF
+            </Link>
+            <Link
               href="/tools/image-compressor"
               className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >

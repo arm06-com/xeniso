@@ -25,6 +25,10 @@ const tools = [
     href: "/tools/pdf-splitter",
   },
   {
+    name: "Merge PDF",
+    href: "/tools/merge-pdf",
+  },
+  {
     name: "Image Compressor",
     href: "/tools/image-compressor",
   },
