@@ -281,7 +281,7 @@ export default function PdfScannerPage() {
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
             <p className="mt-2 text-sm text-slate-600">Open the link below on your mobile device to start scanning.</p>
-            <p className="mt-2 text-sm text-slate-600">Testing Phase</p>
+           
             {/* eslint-disable-next-line @next/next/no-img-element 
             <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-700 break-all">
               {origin ? `${origin}/tools/pdf-scanner/mobile/${sessionId}` : `Loading link...`}
