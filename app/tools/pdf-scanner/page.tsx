@@ -58,19 +58,16 @@ function rotateImageDataUrl(dataUrl: string, rotation: number) {
 }
 
 export default function PdfScannerPage() {
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId, setSessionId] = useState(() => (typeof window !== "undefined" ? crypto.randomUUID() : ""));
   const [images, setImages] = useState<ScannerPage[]>([]);
   const [qrCode, setQrCode] = useState("");
   const [connected, setConnected] = useState(false);
   const [isCreatingPdf, setIsCreatingPdf] = useState(false);
-  const [origin, setOrigin] = useState("");
+  const [origin, setOrigin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
+  const [overrideOrigin, setOverrideOrigin] = useState("");
+  const [draggedId, setDraggedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setOrigin(window.location.origin);
-      setSessionId(crypto.randomUUID());
-    }
-  }, []);
+  // origin and sessionId are initialized synchronously on first render
 
   useEffect(() => {
     if (!sessionId || !origin) return;
@@ -105,7 +102,9 @@ export default function PdfScannerPage() {
         ]);
       });
 
-      const url = `${origin}/tools/pdf-scanner/mobile/${sessionId}`;
+
+      const baseOrigin = overrideOrigin || origin;
+      const url = `${baseOrigin}/tools/pdf-scanner/mobile/${sessionId}`;
 
       QRCode.toDataURL(url)
         .then((data) => {
@@ -127,15 +126,42 @@ export default function PdfScannerPage() {
 
     let cleanup: (() => void) | undefined;
 
+    let pollId: number | undefined;
+
     void initializeScanner().then((dispose) => {
       cleanup = dispose;
+
+      // Start polling status endpoint as a fallback for connection events
+      try {
+        pollId = window.setInterval(async () => {
+          try {
+            const res = await fetch(`/api/pdf-scanner/status?sessionId=${encodeURIComponent(sessionId)}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data?.connected) {
+              setConnected(true);
+              if (pollId) {
+                clearInterval(pollId);
+                pollId = undefined;
+              }
+            }
+          } catch (err) {
+            // ignore transient errors
+          }
+        }, 1500);
+      } catch (err) {
+        // ignore if window or fetch not available
+      }
     });
 
     return () => {
       isActive = false;
+      if (pollId) {
+        clearInterval(pollId);
+      }
       cleanup?.();
     };
-  }, [origin, sessionId]);
+  }, [origin, sessionId, overrideOrigin]);
 
   const handleRotate = async (id: string) => {
     setImages((prev) =>
@@ -149,6 +175,33 @@ export default function PdfScannerPage() {
 
   const handleDelete = (id: string) => {
     setImages((prev) => prev.filter((page) => page.id !== id));
+  };
+
+  const handleDragStart = (id: string) => {
+    setDraggedId(id);
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!draggedId || draggedId === targetId) {
+      setDraggedId(null);
+      return;
+    }
+
+    setImages((prev) => {
+      const fromIndex = prev.findIndex((page) => page.id === draggedId);
+      const toIndex = prev.findIndex((page) => page.id === targetId);
+
+      if (fromIndex === -1 || toIndex === -1) {
+        return prev;
+      }
+
+      const updated = [...prev];
+      const [movedPage] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, movedPage);
+      return updated;
+    });
+
+    setDraggedId(null);
   };
 
   const handleDownloadPdf = async () => {
@@ -228,7 +281,20 @@ export default function PdfScannerPage() {
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
             <p className="mt-2 text-sm text-slate-600">Open the link below on your mobile device to start scanning.</p>
-            
+            <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-700 break-all">
+              {origin ? `${origin}/tools/pdf-scanner/mobile/${sessionId}` : `Loading link...`}
+            </div>
+
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                aria-label="Override origin"
+                placeholder="Paste reachable origin (e.g. http://192.168.68.113:3000)"
+                value={overrideOrigin}
+                onChange={(e) => setOverrideOrigin(e.target.value)}
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              />
+            </div>
+            <p className="mt-2 text-xs text-slate-500">If the QR opens localhost on your phone, paste your LAN or tunneling URL above and the QR will update.</p>
 
             <div className="mt-6 flex justify-center">
               {qrCode ? <img src={qrCode} alt="Mobile connection QR code" className="h-64 w-64 rounded-2xl border border-slate-200 bg-white p-2" /> : <div className="h-64 w-64 animate-pulse rounded-2xl bg-slate-200" />}
@@ -255,10 +321,26 @@ export default function PdfScannerPage() {
                 No pages scanned yet. Use the QR code above on your phone to begin.
               </div>
             ) : (
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="mt-6 space-y-3">
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Drag pages to reorder them before export
+                </div>
                 {images.map((page, index) => (
-                  <div key={page.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-2">
+                  <div
+                    key={page.id}
+                    draggable
+                    onDragStart={() => handleDragStart(page.id)}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={() => handleDrop(page.id)}
+                    onDragEnd={() => setDraggedId(null)}
+                    className={`rounded-2xl border bg-slate-50 p-3 transition ${draggedId === page.id ? "border-sky-500 ring-2 ring-sky-200" : "border-slate-200"}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium text-slate-700">Page {index + 1}</div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Drag to move</div>
+                    </div>
+
+                    <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white p-2">
                       <img
                         src={page.dataUrl}
                         alt={`Scanned page ${index + 1}`}
