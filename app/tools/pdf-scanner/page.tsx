@@ -67,7 +67,7 @@ export default function PdfScannerPage() {
   const [overrideOrigin, setOverrideOrigin] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
-  // origin and sessionId are initialized synchronously on first render
+  // origin and sessionId are i
 
   useEffect(() => {
     if (!sessionId || !origin) return;
@@ -281,6 +281,8 @@ export default function PdfScannerPage() {
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
             <p className="mt-2 text-sm text-slate-600">Open the link below on your mobile device to start scanning.</p>
+            <p className="mt-2 text-sm text-slate-600">Testing Phase</p>
+            {/* eslint-disable-next-line @next/next/no-img-element 
             <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-700 break-all">
               {origin ? `${origin}/tools/pdf-scanner/mobile/${sessionId}` : `Loading link...`}
             </div>
@@ -294,6 +296,7 @@ export default function PdfScannerPage() {
                 className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
               />
             </div>
+            */}
             <p className="mt-2 text-xs text-slate-500">If the QR opens localhost on your phone, paste your LAN or tunneling URL above and the QR will update.</p>
 
             <div className="mt-6 flex justify-center">
