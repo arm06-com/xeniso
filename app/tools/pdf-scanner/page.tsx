@@ -58,22 +58,22 @@ function rotateImageDataUrl(dataUrl: string, rotation: number) {
 }
 
 export default function PdfScannerPage() {
-  const [sessionId, setSessionId] = useState(() => (typeof window !== "undefined" ? crypto.randomUUID() : ""));
+  const [sessionId, setSessionId] = useState("");
   const [images, setImages] = useState<ScannerPage[]>([]);
   const [qrCode, setQrCode] = useState("");
   const [connected, setConnected] = useState(false);
   const [isCreatingPdf, setIsCreatingPdf] = useState(false);
-  const [origin] = useState(() => {
-    if (typeof window === "undefined") {
-      return "";
-    }
-
-    const { protocol, port } = window.location;
-    return `${protocol}//localhost${port ? `:${port}` : ""}`;
-  });
+  const [origin, setOrigin] = useState("");
+  const [overrideOrigin, setOverrideOrigin] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
-  // origin and sessionId are i
+  useEffect(() => {
+    if (sessionId && origin) return;
+    if (typeof window === "undefined") return;
+
+    setSessionId((current) => current || crypto.randomUUID());
+    setOrigin((current) => current || window.location.origin);
+  }, [sessionId, origin]);
 
   useEffect(() => {
     if (!sessionId || !origin) return;
@@ -83,7 +83,34 @@ export default function PdfScannerPage() {
     const initializeScanner = async () => {
       const { createPusherClient } = await import("@/lib/pusher-client");
       const { default: QRCode } = await import("qrcode");
-      const pusherClient = createPusherClient();
+
+      const baseOrigin = overrideOrigin || origin;
+      const url = `${baseOrigin}/tools/pdf-scanner/mobile/${sessionId}`;
+
+      QRCode.toDataURL(url)
+        .then((data) => {
+          if (isActive) {
+            setQrCode(data);
+          }
+        })
+        .catch((error) => {
+          console.error("QR Error:", error);
+        });
+
+      let pusherClient;
+
+      try {
+        pusherClient = createPusherClient();
+      } catch (error) {
+        console.error("Failed to initialize Pusher client:", error);
+      }
+
+      if (!pusherClient) {
+        return () => {
+          isActive = false;
+        };
+      }
+
       const channel = pusherClient.subscribe(`pdf-scanner-${sessionId}`);
 
       channel.bind("mobile-connected", () => {
@@ -107,19 +134,6 @@ export default function PdfScannerPage() {
           },
         ]);
       });
-
-
-      const url = `${origin}/tools/pdf-scanner/mobile/${sessionId}`;
-
-      QRCode.toDataURL(url)
-        .then((data) => {
-          if (isActive) {
-            setQrCode(data);
-          }
-        })
-        .catch((error) => {
-          console.error("QR Error:", error);
-        });
 
       return () => {
         isActive = false;
@@ -166,7 +180,7 @@ export default function PdfScannerPage() {
       }
       cleanup?.();
     };
-  }, [origin, sessionId]);
+  }, [origin, sessionId, overrideOrigin]);
 
   const handleRotate = async (id: string) => {
     setImages((prev) =>

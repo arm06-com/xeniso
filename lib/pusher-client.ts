@@ -6,12 +6,27 @@ const PusherClient = (Pusher as any)?.default ?? Pusher;
 PusherClient.logToConsole = true;
 
 export function createPusherClient() {
+  const key = process.env.NEXT_PUBLIC_PUSHER_KEY || process.env.PUSHER_KEY;
+  const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER || process.env.PUSHER_CLUSTER;
+
+  if (!key) {
+    const noop = () => {};
+    const stub: any = {
+      subscribe: (_channel: string) => ({ bind: noop, unbind_all: noop }),
+      unsubscribe: noop,
+      disconnect: noop,
+    };
+
+    console.warn("Pusher key not set: returning stub client. Real-time features will be disabled.");
+
+    return stub as any;
+  }
+
   return new PusherClient(
-    process.env.NEXT_PUBLIC_PUSHER_KEY!,
+    key,
     {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+      cluster: cluster,
       forceTLS: true,
-      // allow fallback to XHR transports if WebSocket fails in the current network
       enabledTransports: ["ws", "wss", "xhr_streaming", "xhr_polling"],
       disableStats: true,
       activityTimeout: 120000,
