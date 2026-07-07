@@ -63,8 +63,14 @@ export default function PdfScannerPage() {
   const [qrCode, setQrCode] = useState("");
   const [connected, setConnected] = useState(false);
   const [isCreatingPdf, setIsCreatingPdf] = useState(false);
-  const [origin, setOrigin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
-  const [overrideOrigin, setOverrideOrigin] = useState("");
+  const [origin] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    const { protocol, port } = window.location;
+    return `${protocol}//localhost${port ? `:${port}` : ""}`;
+  });
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
   // origin and sessionId are i
@@ -103,8 +109,7 @@ export default function PdfScannerPage() {
       });
 
 
-      const baseOrigin = overrideOrigin || origin;
-      const url = `${baseOrigin}/tools/pdf-scanner/mobile/${sessionId}`;
+      const url = `${origin}/tools/pdf-scanner/mobile/${sessionId}`;
 
       QRCode.toDataURL(url)
         .then((data) => {
@@ -161,7 +166,7 @@ export default function PdfScannerPage() {
       }
       cleanup?.();
     };
-  }, [origin, sessionId, overrideOrigin]);
+  }, [origin, sessionId]);
 
   const handleRotate = async (id: string) => {
     setImages((prev) =>
@@ -280,24 +285,7 @@ export default function PdfScannerPage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.65fr)]">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
-            <p className="mt-2 text-sm text-slate-600">Open the link below on your mobile device to start scanning.</p>
-           
-            {/* eslint-disable-next-line @next/next/no-img-element 
-            <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-700 break-all">
-              {origin ? `${origin}/tools/pdf-scanner/mobile/${sessionId}` : `Loading link...`}
-            </div>
-
-            <div className="mt-3 flex items-center gap-2">
-              <input
-                aria-label="Override origin"
-                placeholder="Paste reachable origin (e.g. http://192.168.68.113:3000)"
-                value={overrideOrigin}
-                onChange={(e) => setOverrideOrigin(e.target.value)}
-                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
-              />
-            </div>
-            */}
-            <p className="mt-2 text-xs text-slate-500">If the QR opens localhost on your phone, paste your LAN or tunneling URL above and the QR will update.</p>
+            <p className="mt-2 text-sm text-slate-600">Open the QR code scanner on your mobile device to start scanning.</p>
 
             <div className="mt-6 flex justify-center">
               {qrCode ? <img src={qrCode} alt="Mobile connection QR code" className="h-64 w-64 rounded-2xl border border-slate-200 bg-white p-2" /> : <div className="h-64 w-64 animate-pulse rounded-2xl bg-slate-200" />}
