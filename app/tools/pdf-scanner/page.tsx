@@ -385,25 +385,22 @@ export default function PdfScannerPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">PDF Scanner</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
-            <p className="text-sm font-medium text-slate-600">Connection status</p>
-            <p className={`mt-2 text-lg font-semibold ${connected ? "text-emerald-600" : "text-amber-600"}`}>
-              {connected ? "🟢 Mobile connected" : "🟡 Waiting for mobile"}
-            </p>
-          </div>
-        </div>
-
         <div className="mt-8 mb-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.65fr)]">
           <div className="max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">PDF Scanner</p>
+            </div>
             <h1 className="mt-2 text-3xl font-semibold text-slate-900">Scan pages from your phone and build a PDF in seconds.</h1>
             <p className="mt-4 text-base text-slate-600">
-              Open the QR code on your phone, capture each page, and manage everything from this desktop workspace.
+              Open the QR code on your phone, capture each page, and manage everything from desktop workspace.
             </p>
+
+            <div className="rounded-2xl border border-orange-400 bg-white p-4 text-center mt-8">
+              <p className="text-sm font-medium text-slate-600">Connection status</p>
+              <p className={`mt-2 text-lg font-semibold ${connected ? "text-emerald-600" : "text-amber-600"}`}>
+                {connected ? "🟢 Mobile connected" : "🟡 Waiting for mobile"}
+              </p>
+            </div>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
