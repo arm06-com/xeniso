@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, type MouseEvent } from "react";
+import ToolLayout from "@/components/ToolLayout";
+import AdBanner from "@/components/AdBanner";
 import { PDFDocument } from "pdf-lib";
 
 type ScannerPage = {
@@ -137,6 +139,12 @@ export default function PdfScannerPage() {
   const [qrCode, setQrCode] = useState("");
   const [connected, setConnected] = useState(false);
   const [isCreatingPdf, setIsCreatingPdf] = useState(false);
+  const [croppingId, setCroppingId] = useState<string | null>(null);
+  const [cropPreviewUrl, setCropPreviewUrl] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [selection, setSelection] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const selectingRef = useRef(false);
+  const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
@@ -311,6 +319,14 @@ export default function PdfScannerPage() {
     setDraggedId(id);
   };
 
+  const startCrop = (id: string) => {
+    const page = images.find((p) => p.id === id);
+    if (!page) return;
+    setCroppingId(id);
+    setCropPreviewUrl(page.dataUrl);
+    setSelection(null);
+  };
+
   const handleDrop = (targetId: string) => {
     if (!draggedId || draggedId === targetId) {
       setDraggedId(null);
@@ -382,8 +398,90 @@ export default function PdfScannerPage() {
     }
   };
 
+  const closeCrop = () => {
+    if (cropPreviewUrl) {
+      // no revoke here because dataUrl isn't an object URL
+    }
+    setCroppingId(null);
+    setCropPreviewUrl(null);
+    setSelection(null);
+  };
+
+  const onCropMouseDown = (e: MouseEvent) => {
+    if (!imgRef.current) return;
+    const rect = imgRef.current.getBoundingClientRect();
+    const startX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const startY = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+    selectionStartRef.current = { x: startX, y: startY };
+    selectingRef.current = true;
+    setSelection({ x: startX, y: startY, width: 0, height: 0 });
+  };
+
+  const onCropMouseMove = (e: MouseEvent) => {
+    if (!selectingRef.current || !imgRef.current || !selectionStartRef.current) return;
+    const rect = imgRef.current.getBoundingClientRect();
+    const curX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const curY = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+    const sx = Math.min(selectionStartRef.current.x, curX);
+    const sy = Math.min(selectionStartRef.current.y, curY);
+    const sw = Math.abs(curX - selectionStartRef.current.x);
+    const sh = Math.abs(curY - selectionStartRef.current.y);
+    setSelection({ x: sx, y: sy, width: sw, height: sh });
+  };
+
+  const onCropMouseUp = () => {
+    selectingRef.current = false;
+    selectionStartRef.current = null;
+  };
+
+  const applyCrop = async () => {
+    if (!selection || !cropPreviewUrl || !croppingId || !imgRef.current) {
+      // nothing selected: just close
+      closeCrop();
+      return;
+    }
+
+    const imgEl = imgRef.current;
+    const naturalW = imgEl.naturalWidth;
+    const naturalH = imgEl.naturalHeight;
+    const displayW = imgEl.clientWidth || imgEl.width;
+    const displayH = imgEl.clientHeight || imgEl.height;
+    const scaleX = naturalW / displayW;
+    const scaleY = naturalH / displayH;
+
+    const sx = Math.round(selection.x * scaleX);
+    const sy = Math.round(selection.y * scaleY);
+    const sWidth = Math.max(1, Math.round(selection.width * scaleX));
+    const sHeight = Math.max(1, Math.round(selection.height * scaleY));
+
+    const image = new Image();
+    image.src = cropPreviewUrl;
+    await new Promise((res, rej) => {
+      image.onload = res;
+      image.onerror = rej;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = sWidth;
+    canvas.height = sHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      closeCrop();
+      return;
+    }
+
+    ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
+    const croppedDataUrl = canvas.toDataURL("image/png");
+
+    setImages((prev) => prev.map((item) => (item.id === croppingId ? { ...item, dataUrl: croppedDataUrl } : item)));
+    closeCrop();
+  };
+
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12">
+    <ToolLayout
+      title="PDF Scanner"
+      description="Scan pages from your phone and build a PDF in seconds. Manage scans from the desktop workspace."
+    >
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mt-8 mb-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.65fr)]">
           <div className="max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-6">
@@ -474,28 +572,12 @@ export default function PdfScannerPage() {
                       </button>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       <button
-                        onClick={() => handleZoomChange(page.id, -0.1)}
+                        onClick={() => startCrop(page.id)}
                         className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
                       >
-                        Zoom out
-                      </button>
-                      <span className="text-sm font-medium text-slate-600">{page.zoom.toFixed(1)}x</span>
-                      <button
-                        onClick={() => handleZoomChange(page.id, 0.1)}
-                        className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
-                      >
-                        Zoom in
-                      </button>
-                    </div>
-
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => handleCrop(page.id)}
-                        className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
-                      >
-                        Auto crop
+                        Crop
                       </button>
                       <button
                         onClick={() => handleRotate(page.id)}
@@ -511,6 +593,44 @@ export default function PdfScannerPage() {
           )}
         </div>
       </div>
-    </div>
+      <AdBanner slot="MIDDLE-BANNER" />
+
+      {croppingId && cropPreviewUrl && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
+        <div className="max-w-4xl w-full rounded-2xl bg-white p-4 text-slate-900">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Crop image</h3>
+            <div className="flex gap-2">
+              <button onClick={closeCrop} className="rounded-md border px-3 py-1 text-sm">Cancel</button>
+              <button onClick={applyCrop} className="rounded-md bg-slate-900 px-3 py-1 text-sm text-white">Apply</button>
+            </div>
+          </div>
+
+          <div
+            className="relative flex items-center justify-center overflow-auto bg-slate-100 p-4"
+            onMouseDown={onCropMouseDown}
+            onMouseMove={onCropMouseMove}
+            onMouseUp={onCropMouseUp}
+          >
+            <img ref={imgRef} src={cropPreviewUrl} alt="Crop preview" className="max-h-[70vh] w-auto" />
+
+            {selection && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: selection.x,
+                  top: selection.y,
+                  width: selection.width,
+                  height: selection.height,
+                }}
+              >
+                <div className="absolute inset-0 rounded-sm border-2 border-dashed border-sky-500 bg-sky-500/10" />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      )}
+    </ToolLayout>
   );
 }

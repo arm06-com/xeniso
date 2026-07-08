@@ -21,6 +21,10 @@ export default function MobilePage() {
   const [videoSize, setVideoSize] = useState({ width: 1, height: 1 });
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const [capturedFile, setCapturedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const connectToDesktop = async () => {
@@ -263,8 +267,39 @@ export default function MobilePage() {
 
     if (!file) return;
 
-    await uploadImage(file);
+    // show preview with Retake / Ok
+    setCapturedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
     event.target.value = "";
+  };
+
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleGalleryClick = () => {
+    galleryInputRef.current?.click();
+  };
+
+  const handleRetake = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setCapturedFile(null);
+    setPreviewUrl(null);
+    // re-open camera input for new capture
+    cameraInputRef.current?.click();
+  };
+
+  const handleConfirm = async () => {
+    if (!capturedFile) return;
+    await uploadImage(capturedFile);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setCapturedFile(null);
+    setPreviewUrl(null);
   };
 
   return (
@@ -309,37 +344,55 @@ export default function MobilePage() {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/15 bg-slate-900/70 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
-            Choose from gallery
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageCapture}
-            />
-          </label>
+          <button
+            type="button"
+            onClick={handleGalleryClick}
+            className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/15 bg-slate-900/70 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            Choose From Gallary
+          </button>
+
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageCapture}
+          />
 
           <button
             type="button"
-            onClick={() => void startCamera()}
-            disabled={isCameraReady}
-            className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:bg-slate-700"
+            onClick={handleCameraClick}
+            className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 p-3 text-white transition hover:bg-white/15"
+            aria-label="Open camera"
           >
-            <span className="mr-2 text-lg">📷</span>
-            Open camera
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h4l2-3h6l2 3h4v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
+            </svg>
           </button>
 
-          {isCameraReady && (
-            <button
-              type="button"
-              onClick={() => void captureCurrentFrame(true)}
-              disabled={isUploading}
-              className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              {isUploading ? "Uploading..." : "Capture page"}
-            </button>
-          )}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleImageCapture}
+          />
         </div>
+
+        {previewUrl && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+            <div className="max-w-md rounded-xl bg-white p-4 text-slate-900">
+              <img src={previewUrl} alt="Captured preview" className="mb-4 max-h-[60vh] w-full object-contain" />
+              <div className="flex justify-between">
+                <button onClick={handleRetake} className="rounded-md border px-4 py-2 text-sm font-medium">Retake</button>
+                <button onClick={handleConfirm} className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white">Ok</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-4 text-sm text-slate-400">
           Tip: the camera automatically detects the page edges and crops to make the page size consistent.
