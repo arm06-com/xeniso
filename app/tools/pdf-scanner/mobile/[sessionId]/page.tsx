@@ -290,22 +290,22 @@ export default function MobilePage() {
           />
 
           {isCameraReady && (
-            <div className="pointer-events-none absolute inset-0">
-              {isAutoDetectEnabled && detectionBox ? (
-                <div
-                  className="absolute rounded-2xl border-2 border-emerald-400 shadow-[0_0_0_9999px_rgba(2,6,23,0.55)]"
-                  style={{
-                    left: `${(detectionBox.x / videoSize.width) * 100}%`,
-                    top: `${(detectionBox.y / videoSize.height) * 100}%`,
-                    width: `${(detectionBox.width / videoSize.width) * 100}%`,
-                    height: `${(detectionBox.height / videoSize.height) * 100}%`,
-                  }}
-                />
-              ) : (
-                <div className="absolute inset-0 border-[2px] border-dashed border-slate-400/70" />
-              )}
-            </div>
-          )}
+          <div className="pointer-events-none absolute inset-0">
+            {detectionBox ? (
+              <div
+                className="absolute rounded-2xl border-2 border-emerald-400 shadow-[0_0_0_9999px_rgba(2,6,23,0.55)]"
+                style={{
+                  left: `${(detectionBox.x / videoSize.width) * 100}%`,
+                  top: `${(detectionBox.y / videoSize.height) * 100}%`,
+                  width: `${(detectionBox.width / videoSize.width) * 100}%`,
+                  height: `${(detectionBox.height / videoSize.height) * 100}%`,
+                }}
+              />
+            ) : (
+              <div className="absolute inset-0 border-[2px] border-dashed border-slate-400/70" />
+            )}
+          </div>
+        )}
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
