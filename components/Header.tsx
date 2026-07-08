@@ -13,6 +13,10 @@ import {
 
 const tools = [
   {
+    name: "PDF Scanner",
+    href: "/tools/pdf-scanner",
+  },
+  {
     name: "PDF Compressor",
     href: "/tools/pdf-compressor",
   },

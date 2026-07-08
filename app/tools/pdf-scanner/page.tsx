@@ -7,7 +7,7 @@ type ScannerPage = {
   id: string;
   dataUrl: string;
   rotation: number;
-  scale: number;
+  zoom: number;
 };
 
 const A4_WIDTH = 595.28;
@@ -57,23 +57,88 @@ function rotateImageDataUrl(dataUrl: string, rotation: number) {
   });
 }
 
+function autoCropImageDataUrl(dataUrl: string) {
+  return new Promise<string>((resolve, reject) => {
+    const image = new Image();
+
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        reject(new Error("Unable to create canvas context"));
+        return;
+      }
+
+      canvas.width = image.width;
+      canvas.height = image.height;
+      context.drawImage(image, 0, 0);
+
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const { data, width, height } = imageData;
+
+      let minX = width;
+      let minY = height;
+      let maxX = 0;
+      let maxY = 0;
+
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          const index = (y * width + x) * 4;
+          const red = data[index];
+          const green = data[index + 1];
+          const blue = data[index + 2];
+          const alpha = data[index + 3];
+          const brightness = (red + green + blue) / 3;
+
+          if (alpha > 0 && brightness < 245) {
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+          }
+        }
+      }
+
+      if (minX >= maxX || minY >= maxY) {
+        resolve(dataUrl);
+        return;
+      }
+
+      const padding = 8;
+      const cropX = Math.max(0, minX - padding);
+      const cropY = Math.max(0, minY - padding);
+      const cropWidth = Math.max(1, Math.min(width - cropX, maxX - cropX + 1 + padding * 2));
+      const cropHeight = Math.max(1, Math.min(height - cropY, maxY - cropY + 1 + padding * 2));
+
+      const cropCanvas = document.createElement("canvas");
+      const cropContext = cropCanvas.getContext("2d");
+
+      if (!cropContext) {
+        reject(new Error("Unable to create crop canvas context"));
+        return;
+      }
+
+      cropCanvas.width = cropWidth;
+      cropCanvas.height = cropHeight;
+      cropContext.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+      resolve(cropCanvas.toDataURL("image/png"));
+    };
+
+    image.onerror = () => reject(new Error("Failed to load image"));
+    image.src = dataUrl;
+  });
+}
+
 export default function PdfScannerPage() {
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId] = useState(() => (typeof window !== "undefined" ? crypto.randomUUID() : ""));
   const [images, setImages] = useState<ScannerPage[]>([]);
   const [qrCode, setQrCode] = useState("");
   const [connected, setConnected] = useState(false);
   const [isCreatingPdf, setIsCreatingPdf] = useState(false);
-  const [origin, setOrigin] = useState("");
-  const [overrideOrigin, setOverrideOrigin] = useState("");
+  const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
   const [draggedId, setDraggedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (sessionId && origin) return;
-    if (typeof window === "undefined") return;
-
-    setSessionId((current) => current || crypto.randomUUID());
-    setOrigin((current) => current || window.location.origin);
-  }, [sessionId, origin]);
 
   useEffect(() => {
     if (!sessionId || !origin) return;
@@ -84,8 +149,7 @@ export default function PdfScannerPage() {
       const { createPusherClient } = await import("@/lib/pusher-client");
       const { default: QRCode } = await import("qrcode");
 
-      const baseOrigin = overrideOrigin || origin;
-      const url = `${baseOrigin}/tools/pdf-scanner/mobile/${sessionId}`;
+      const url = `${origin}/tools/pdf-scanner/mobile/${sessionId}`;
 
       QRCode.toDataURL(url)
         .then((data) => {
@@ -130,7 +194,7 @@ export default function PdfScannerPage() {
             id: crypto.randomUUID(),
             dataUrl: data.image!,
             rotation: 0,
-            scale: 1,
+            zoom: 1,
           },
         ]);
       });
@@ -176,7 +240,7 @@ export default function PdfScannerPage() {
                     id: crypto.randomUUID(),
                     dataUrl: image,
                     rotation: 0,
-                    scale: 1,
+                    zoom: 1,
                   })),
                 ]);
               }
@@ -203,7 +267,7 @@ export default function PdfScannerPage() {
       }
       cleanup?.();
     };
-  }, [origin, sessionId, overrideOrigin]);
+  }, [origin, sessionId]);
 
   const handleRotate = async (id: string) => {
     setImages((prev) =>
@@ -211,8 +275,32 @@ export default function PdfScannerPage() {
     );
   };
 
-  const handleScaleChange = (id: string, value: number) => {
-    setImages((prev) => prev.map((page) => (page.id === id ? { ...page, scale: value } : page)));
+  const handleZoomChange = (id: string, change: number) => {
+    setImages((prev) =>
+      prev.map((page) => {
+        if (page.id !== id) {
+          return page;
+        }
+
+        const nextZoom = Math.max(0.75, Math.min(2.5, page.zoom + change));
+        return { ...page, zoom: nextZoom };
+      })
+    );
+  };
+
+  const handleCrop = async (id: string) => {
+    const page = images.find((item) => item.id === id);
+
+    if (!page) {
+      return;
+    }
+
+    try {
+      const cropped = await autoCropImageDataUrl(page.dataUrl);
+      setImages((prev) => prev.map((item) => (item.id === id ? { ...item, dataUrl: cropped } : item)));
+    } catch (error) {
+      console.error("Auto crop failed:", error);
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -267,18 +355,13 @@ export default function PdfScannerPage() {
         const isPng = imageDataUrl.startsWith("data:image/png");
         const image = isPng ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
         const pdfPage = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
-        const maxWidth = A4_WIDTH - 60;
-        const maxHeight = A4_HEIGHT - 60;
-        const baseScale = Math.min(maxWidth / image.width, maxHeight / image.height);
-        const effectiveScale = baseScale * page.scale;
-        const drawWidth = image.width * effectiveScale;
-        const drawHeight = image.height * effectiveScale;
-        const x = (A4_WIDTH - drawWidth) / 2;
-        const y = (A4_HEIGHT - drawHeight) / 2;
+        const baseScale = Math.min(A4_WIDTH / image.width, A4_HEIGHT / image.height) * page.zoom;
+        const drawWidth = image.width * baseScale;
+        const drawHeight = image.height * baseScale;
 
         pdfPage.drawImage(image, {
-          x,
-          y,
+          x: 0,
+          y: A4_HEIGHT - drawHeight,
           width: drawWidth,
           height: drawHeight,
         });
@@ -305,10 +388,6 @@ export default function PdfScannerPage() {
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">PDF Scanner</p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-900">Scan pages from your phone and build a PDF in seconds.</h1>
-            <p className="mt-4 text-base text-slate-600">
-              Open the QR code on your phone, capture each page, and manage everything from this desktop workspace.
-            </p>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
@@ -319,7 +398,13 @@ export default function PdfScannerPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.65fr)]">
+        <div className="mt-8 mb-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.65fr)]">
+          <div className="max-w-2xl rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h1 className="mt-2 text-3xl font-semibold text-slate-900">Scan pages from your phone and build a PDF in seconds.</h1>
+            <p className="mt-4 text-base text-slate-600">
+              Open the QR code on your phone, capture each page, and manage everything from this desktop workspace.
+            </p>
+          </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
             <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
             <p className="mt-2 text-sm text-slate-600">Open the QR code scanner on your mobile device to start scanning.</p>
@@ -328,31 +413,34 @@ export default function PdfScannerPage() {
               {qrCode ? <img src={qrCode} alt="Mobile connection QR code" className="h-64 w-64 rounded-2xl border border-slate-200 bg-white p-2" /> : <div className="h-64 w-64 animate-pulse rounded-2xl bg-slate-200" />}
             </div>
           </div>
+        </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Captured pages</h2>
-                <p className="mt-1 text-sm text-slate-600">Each scan appears here as a page you can refine before exporting.</p>
-              </div>
-              <button
-                onClick={handleDownloadPdf}
-                disabled={images.length === 0 || isCreatingPdf}
-                className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-              >
-                {isCreatingPdf ? "Creating PDF..." : "Create PDF"}
-              </button>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Captured pages</h2>
+              <p className="mt-1 text-sm text-slate-600">Each scan appears here as a page you can refine before exporting.</p>
             </div>
+            <button
+              onClick={handleDownloadPdf}
+              disabled={images.length === 0 || isCreatingPdf}
+              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {isCreatingPdf ? "Creating PDF..." : "Create PDF"}
+            </button>
+          </div>
 
-            {images.length === 0 ? (
-              <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
-                No pages scanned yet. Use the QR code above on your phone to begin.
+          {images.length === 0 ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+              No pages scanned yet. Use the QR code above on your phone to begin.
+            </div>
+          ) : (
+            <div className="mt-6 space-y-3">
+              <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Drag pages to reorder them before export
               </div>
-            ) : (
-              <div className="mt-6 space-y-3">
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  Drag pages to reorder them before export
-                </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {images.map((page, index) => (
                   <div
                     key={page.id}
@@ -361,19 +449,24 @@ export default function PdfScannerPage() {
                     onDragOver={(event) => event.preventDefault()}
                     onDrop={() => handleDrop(page.id)}
                     onDragEnd={() => setDraggedId(null)}
-                    className={`rounded-2xl border bg-slate-50 p-3 transition ${draggedId === page.id ? "border-sky-500 ring-2 ring-sky-200" : "border-slate-200"}`}
+                    className={`flex h-full flex-col rounded-2xl border bg-slate-50 p-3 transition ${draggedId === page.id ? "border-sky-500 ring-2 ring-sky-200" : "border-slate-200"}`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium text-slate-700">Page {index + 1}</div>
+                      <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <span className="text-base text-slate-400" aria-hidden>
+                          ⋮⋮
+                        </span>
+                        <span>Page {index + 1}</span>
+                      </div>
                       <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Drag to move</div>
                     </div>
 
-                    <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white p-2">
+                    <div className="mt-3 flex min-h-56 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-2">
                       <img
                         src={page.dataUrl}
                         alt={`Scanned page ${index + 1}`}
-                        className="h-48 w-full rounded-lg object-contain"
-                        style={{ transform: `rotate(${page.rotation}deg)` }}
+                        className="max-h-56 max-w-full rounded-lg object-contain"
+                        style={{ transform: `rotate(${page.rotation}deg) scale(${page.zoom})` }}
                       />
                     </div>
 
@@ -384,23 +477,32 @@ export default function PdfScannerPage() {
                       </button>
                     </div>
 
-                    <div className="mt-3 space-y-3">
-                      <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                        Resize
-                        <input
-                          type="range"
-                          min="0.5"
-                          max="2"
-                          step="0.1"
-                          value={page.scale}
-                          onChange={(event) => handleScaleChange(page.id, Number(event.target.value))}
-                          className="mt-2 w-full"
-                        />
-                      </label>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => handleZoomChange(page.id, -0.1)}
+                        className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                      >
+                        Zoom out
+                      </button>
+                      <span className="text-sm font-medium text-slate-600">{page.zoom.toFixed(1)}x</span>
+                      <button
+                        onClick={() => handleZoomChange(page.id, 0.1)}
+                        className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                      >
+                        Zoom in
+                      </button>
+                    </div>
 
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleCrop(page.id)}
+                        className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                      >
+                        Auto crop
+                      </button>
                       <button
                         onClick={() => handleRotate(page.id)}
-                        className="w-full rounded-full border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                        className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
                       >
                         Rotate 90°
                       </button>
@@ -408,8 +510,8 @@ export default function PdfScannerPage() {
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

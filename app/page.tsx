@@ -3,6 +3,11 @@ import Link from "next/link";
 
 const tools = [
   {
+    title: "PDF Scanner",
+    description: "Scan documents directly from your mobile camera.",
+    href: "/tools/pdf-scanner",
+  },
+  {
     title: "PDF Compressor",
     description: "Reduce PDF file size instantly.",
     href: "/tools/pdf-compressor",
@@ -158,7 +163,7 @@ export default function HomePage() {
 
             <div>
               <h3 className="text-black text-4xl font-bold">
-                9+
+                11+
               </h3>
 
               <p className="mt-2 text-gray-600">

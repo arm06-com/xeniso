@@ -14,6 +14,12 @@ export default function ToolSidebar() {
 
           <div className="space-y-3">
             <Link
+              href="/tools/pdf-scanner"
+              className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
+            >
+              PDF Scanner
+            </Link>
+            <Link
               href="/tools/pdf-compressor"
               className="block border rounded-xl p-4 hover:shadow-md transition text-gray-800"
             >
