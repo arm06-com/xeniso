@@ -573,12 +573,13 @@ export default function PdfScannerPage() {
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
+                      {/* button crop
                       <button
                         onClick={() => startCrop(page.id)}
                         className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
                       >
                         Crop
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => handleRotate(page.id)}
                         className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"

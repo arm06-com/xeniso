@@ -461,16 +461,25 @@ export default function MobilePage() {
         </div>
 
         {previewUrl && showCropModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-            <div className="w-full max-w-2xl rounded-xl bg-slate-950 p-6 text-white shadow-2xl">
-              <h2 className="mb-4 text-lg font-semibold">Crop Your Image</h2>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-2 sm:p-4">
+            <div className="w-full h-full max-w-4xl max-h-screen flex flex-col rounded-xl bg-slate-950 p-4 sm:p-6 text-white shadow-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Mark Your Document Area</h2>
+                <button
+                  onClick={handleRetake}
+                  className="text-gray-400 hover:text-white text-2xl"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
               
-              <div className="relative mb-4 bg-black" style={{ height: "400px" }}>
+              <div className="relative flex-1 mb-4 bg-black rounded-lg overflow-hidden min-h-0">
                 <Cropper
                   image={previewUrl}
                   crop={crop}
                   zoom={zoom}
-                  aspect={1}
+                  aspect={9 / 16}
                   cropShape="rect"
                   showGrid
                   onCropChange={setCrop}
@@ -479,29 +488,36 @@ export default function MobilePage() {
                   }}
                   onZoomChange={setZoom}
                   objectFit="contain"
+                  restrictions={(mediaSize, containerSize, state) => {
+                    return [];
+                  }}
                 />
               </div>
 
-              <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium">Zoom Level</label>
-                <input
-                  type="range"
-                  min="1"
-                  max="3"
-                  step="0.1"
-                  value={zoom}
-                  onChange={(e) => setZoom(parseFloat(e.target.value))}
-                  className="w-full"
-                />
+              <div className="mb-4 space-y-3">
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Zoom ({zoom.toFixed(1)}x)</label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.1"
+                    value={zoom}
+                    onChange={(e) => setZoom(parseFloat(e.target.value))}
+                    className="w-full accent-emerald-500"
+                  />
+                </div>
+
+                <div className="rounded-lg bg-slate-900/70 p-3">
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    ✓ Aspect Ratio: 9:16 (Portrait)<br/>
+                    ✓ Drag to position the document area<br/>
+                    ✓ Use zoom slider to adjust view
+                  </p>
+                </div>
               </div>
 
-              <div className="mb-4 rounded-lg bg-slate-900/70 p-3">
-                <p className="text-xs text-slate-300">
-                  📍 Mark the page area you want to scan. You can drag to move and use the zoom slider to adjust the view.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-auto">
                 <button
                   onClick={handleRetake}
                   className="flex-1 rounded-lg border border-white/20 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
@@ -511,7 +527,7 @@ export default function MobilePage() {
                 <button
                   onClick={handleConfirm}
                   disabled={isUploading || !croppedAreaPixels}
-                  className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isUploading ? "Uploading..." : "Confirm & Upload"}
                 </button>
