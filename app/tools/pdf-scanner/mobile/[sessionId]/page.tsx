@@ -17,7 +17,6 @@ export default function MobilePage() {
   const [status, setStatus] = useState("Connecting to desktop...");
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const [isAutoDetectEnabled, setIsAutoDetectEnabled] = useState(true);
   const [detectionBox, setDetectionBox] = useState<DetectionBox | null>(null);
   const [videoSize, setVideoSize] = useState({ width: 1, height: 1 });
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -49,48 +48,38 @@ export default function MobilePage() {
     }
   }, [sessionId]);
 
-  useEffect(() => {
-    let isCancelled = false;
+  const startCamera = async () => {
+    if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      setStatus("Camera access is not supported in this browser.");
+      return;
+    }
 
-    const startCamera = async () => {
-      if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-        setStatus("Camera access is not supported in this browser.");
-        return;
-      }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
 
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-          audio: false,
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        setVideoSize({
+          width: videoRef.current.videoWidth || 1280,
+          height: videoRef.current.videoHeight || 720,
         });
-
-        if (isCancelled) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-          setVideoSize({
-            width: videoRef.current.videoWidth || 1280,
-            height: videoRef.current.videoHeight || 720,
-          });
-        }
-
-        setIsCameraReady(true);
-        setStatus("Camera ready. Auto-detect is on, or you can capture the full frame.");
-      } catch {
-        setStatus("Camera permission was denied. You can still choose a photo from your library.");
       }
-    };
 
-    void startCamera();
+      setIsCameraReady(true);
+      setStatus("Camera ready. Page edge detection is active.");
+    } catch {
+      setStatus("Camera permission was denied. You can still choose a photo from your library.");
+    }
+  };
 
+  useEffect(() => {
     return () => {
-      isCancelled = true;
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
       setIsCameraReady(false);
@@ -103,7 +92,7 @@ export default function MobilePage() {
     }
 
     const detectLoop = window.setInterval(() => {
-      if (!videoRef.current || !isAutoDetectEnabled) {
+      if (!videoRef.current) {
         setDetectionBox(null);
         return;
       }
@@ -191,7 +180,7 @@ export default function MobilePage() {
     return () => {
       window.clearInterval(detectLoop);
     };
-  }, [isAutoDetectEnabled, isCameraReady]);
+  }, [isCameraReady]);
 
   const uploadImage = async (file: File) => {
     try {
@@ -320,40 +309,41 @@ export default function MobilePage() {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/15 bg-slate-900/70 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+            Choose from gallery
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageCapture}
+            />
+          </label>
+
           <button
             type="button"
-            onClick={() => setIsAutoDetectEnabled((current) => !current)}
-            className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white"
+            onClick={() => void startCamera()}
+            disabled={isCameraReady}
+            className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:bg-slate-700"
           >
-            {isAutoDetectEnabled ? "Auto-detect on" : "Auto-detect off"}
+            <span className="mr-2 text-lg">📷</span>
+            Open camera
           </button>
-          <button
-            type="button"
-            onClick={() => void captureCurrentFrame(true)}
-            disabled={isUploading || !isCameraReady}
-            className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-300"
-          >
-            {isUploading ? "Uploading..." : "Capture with edge detection"}
-          </button>
-          <button
-            type="button"
-            onClick={() => void captureCurrentFrame(false)}
-            disabled={isUploading || !isCameraReady}
-            className="rounded-full border border-white/15 bg-slate-900/70 px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:border-slate-700 disabled:text-slate-500"
-          >
-            Capture full frame
-          </button>
+
+          {isCameraReady && (
+            <button
+              type="button"
+              onClick={() => void captureCurrentFrame(true)}
+              disabled={isUploading}
+              className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {isUploading ? "Uploading..." : "Capture page"}
+            </button>
+          )}
         </div>
 
-        <label className="mt-4 inline-flex cursor-pointer items-center justify-center rounded-full border border-white/15 bg-slate-900/70 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
-          Choose from gallery
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageCapture}
-          />
-        </label>
+        <div className="mt-4 text-sm text-slate-400">
+          Tip: the camera automatically detects the page edges and crops to make the page size consistent.
+        </div>
 
         <div className="mt-6 text-sm text-slate-400">
           Tip: keep the page flat and centered. The desktop view will update automatically after each capture.
