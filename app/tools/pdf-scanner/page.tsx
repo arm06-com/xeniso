@@ -150,24 +150,47 @@ export default function PdfScannerPage() {
     void initializeScanner().then((dispose) => {
       cleanup = dispose;
 
-      // Start polling status endpoint as a fallback for connection events
       try {
-        pollId = window.setInterval(async () => {
+        const pollForUpdates = async () => {
           try {
-            const res = await fetch(`/api/pdf-scanner/status?sessionId=${encodeURIComponent(sessionId)}`);
-            if (!res.ok) return;
-            const data = await res.json();
-            if (data?.connected) {
-              setConnected(true);
-              if (pollId) {
-                clearInterval(pollId);
-                pollId = undefined;
+            const [statusRes, imagesRes] = await Promise.all([
+              fetch(`/api/pdf-scanner/status?sessionId=${encodeURIComponent(sessionId)}`),
+              fetch(`/api/pdf-scanner/images?sessionId=${encodeURIComponent(sessionId)}`),
+            ]);
+
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              if (statusData?.connected) {
+                setConnected(true);
+              }
+            }
+
+            if (imagesRes.ok) {
+              const imageData = await imagesRes.json();
+              const pendingImages = Array.isArray(imageData?.images) ? imageData.images : [];
+
+              if (pendingImages.length > 0) {
+                setImages((prev) => [
+                  ...prev,
+                  ...pendingImages.map((image: string) => ({
+                    id: crypto.randomUUID(),
+                    dataUrl: image,
+                    rotation: 0,
+                    scale: 1,
+                  })),
+                ]);
               }
             }
           } catch (err) {
             // ignore transient errors
           }
+        };
+
+        pollId = window.setInterval(() => {
+          void pollForUpdates();
         }, 1500);
+
+        void pollForUpdates();
       } catch (err) {
         // ignore if window or fetch not available
       }
