@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import imageCompression from "browser-image-compression";
+import Cropper from "react-easy-crop";
 
 type DetectionBox = {
   x: number;
@@ -25,6 +26,10 @@ export default function MobilePage() {
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const [capturedFile, setCapturedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [showCropModal, setShowCropModal] = useState(false);
 
   useEffect(() => {
     const connectToDesktop = async () => {
@@ -267,10 +272,13 @@ export default function MobilePage() {
 
     if (!file) return;
 
-    // show preview with Retake / Ok
+    // show crop modal
     setCapturedFile(file);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
+    setShowCropModal(true);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
     event.target.value = "";
   };
 
@@ -288,18 +296,88 @@ export default function MobilePage() {
     }
     setCapturedFile(null);
     setPreviewUrl(null);
+    setShowCropModal(false);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
     // re-open camera input for new capture
     cameraInputRef.current?.click();
   };
 
+  const createCroppedImage = async (): Promise<File | null> => {
+    if (!previewUrl || !croppedAreaPixels) return null;
+
+    try {
+      const image = new Image();
+      image.src = previewUrl;
+
+      return new Promise((resolve) => {
+        image.onload = () => {
+          const canvas = document.createElement("canvas");
+          const scaleX = image.naturalWidth / image.width;
+          const scaleY = image.naturalHeight / image.height;
+          canvas.width = croppedAreaPixels.width;
+          canvas.height = croppedAreaPixels.height;
+          const ctx = canvas.getContext("2d");
+
+          if (ctx) {
+            ctx.drawImage(
+              image,
+              croppedAreaPixels.x * scaleX,
+              croppedAreaPixels.y * scaleY,
+              croppedAreaPixels.width * scaleX,
+              croppedAreaPixels.height * scaleY,
+              0,
+              0,
+              croppedAreaPixels.width,
+              croppedAreaPixels.height
+            );
+          }
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const croppedFile = new File([blob], `scan-cropped-${Date.now()}.jpg`, {
+                type: "image/jpeg",
+              });
+              resolve(croppedFile);
+            } else {
+              resolve(null);
+            }
+          }, "image/jpeg", 0.95);
+        };
+      });
+    } catch (error) {
+      console.error("Error cropping image:", error);
+      return null;
+    }
+  };
+
   const handleConfirm = async () => {
-    if (!capturedFile) return;
-    await uploadImage(capturedFile);
+    if (!capturedFile || !croppedAreaPixels) return;
+    
+    try {
+      const croppedFile = await createCroppedImage();
+      if (croppedFile) {
+        setCapturedFile(croppedFile);
+        await uploadImage(croppedFile);
+      } else {
+        // Fallback to original file if crop failed
+        await uploadImage(capturedFile);
+      }
+    } catch (error) {
+      console.error("Error during confirmation:", error);
+      await uploadImage(capturedFile);
+    }
+    
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
     setCapturedFile(null);
     setPreviewUrl(null);
+    setShowCropModal(false);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
   };
 
   return (
@@ -382,13 +460,61 @@ export default function MobilePage() {
           />
         </div>
 
-        {previewUrl && (
+        {previewUrl && showCropModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-            <div className="max-w-md rounded-xl bg-white p-4 text-slate-900">
-              <img src={previewUrl} alt="Captured preview" className="mb-4 max-h-[60vh] w-full object-contain" />
-              <div className="flex justify-between">
-                <button onClick={handleRetake} className="rounded-md border px-4 py-2 text-sm font-medium">Retake</button>
-                <button onClick={handleConfirm} className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white">Ok</button>
+            <div className="w-full max-w-2xl rounded-xl bg-slate-950 p-6 text-white shadow-2xl">
+              <h2 className="mb-4 text-lg font-semibold">Crop Your Image</h2>
+              
+              <div className="relative mb-4 bg-black" style={{ height: "400px" }}>
+                <Cropper
+                  image={previewUrl}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="rect"
+                  showGrid
+                  onCropChange={setCrop}
+                  onCropComplete={(croppedArea, croppedAreaPixels) => {
+                    setCroppedAreaPixels(croppedAreaPixels);
+                  }}
+                  onZoomChange={setZoom}
+                  objectFit="contain"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="mb-2 block text-sm font-medium">Zoom Level</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.1"
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="mb-4 rounded-lg bg-slate-900/70 p-3">
+                <p className="text-xs text-slate-300">
+                  📍 Mark the page area you want to scan. You can drag to move and use the zoom slider to adjust the view.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleRetake}
+                  className="flex-1 rounded-lg border border-white/20 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+                >
+                  Retake
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  disabled={isUploading || !croppedAreaPixels}
+                  className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {isUploading ? "Uploading..." : "Confirm & Upload"}
+                </button>
               </div>
             </div>
           </div>
