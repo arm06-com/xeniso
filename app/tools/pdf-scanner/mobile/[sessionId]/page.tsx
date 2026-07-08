@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import imageCompression from "browser-image-compression";
-import Cropper from "react-easy-crop";
 
 type DetectionBox = {
   x: number;
@@ -26,10 +25,6 @@ export default function MobilePage() {
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const [capturedFile, setCapturedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [showCropModal, setShowCropModal] = useState(false);
 
   useEffect(() => {
     const connectToDesktop = async () => {
@@ -272,13 +267,9 @@ export default function MobilePage() {
 
     if (!file) return;
 
-    // show crop modal
     setCapturedFile(file);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
-    setShowCropModal(true);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
     event.target.value = "";
   };
 
@@ -296,88 +287,20 @@ export default function MobilePage() {
     }
     setCapturedFile(null);
     setPreviewUrl(null);
-    setShowCropModal(false);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
     // re-open camera input for new capture
     cameraInputRef.current?.click();
   };
 
-  const createCroppedImage = async (): Promise<File | null> => {
-    if (!previewUrl || !croppedAreaPixels) return null;
-
-    try {
-      const image = new Image();
-      image.src = previewUrl;
-
-      return new Promise((resolve) => {
-        image.onload = () => {
-          const canvas = document.createElement("canvas");
-          const scaleX = image.naturalWidth / image.width;
-          const scaleY = image.naturalHeight / image.height;
-          canvas.width = croppedAreaPixels.width;
-          canvas.height = croppedAreaPixels.height;
-          const ctx = canvas.getContext("2d");
-
-          if (ctx) {
-            ctx.drawImage(
-              image,
-              croppedAreaPixels.x * scaleX,
-              croppedAreaPixels.y * scaleY,
-              croppedAreaPixels.width * scaleX,
-              croppedAreaPixels.height * scaleY,
-              0,
-              0,
-              croppedAreaPixels.width,
-              croppedAreaPixels.height
-            );
-          }
-
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const croppedFile = new File([blob], `scan-cropped-${Date.now()}.jpg`, {
-                type: "image/jpeg",
-              });
-              resolve(croppedFile);
-            } else {
-              resolve(null);
-            }
-          }, "image/jpeg", 0.95);
-        };
-      });
-    } catch (error) {
-      console.error("Error cropping image:", error);
-      return null;
-    }
-  };
-
   const handleConfirm = async () => {
-    if (!capturedFile || !croppedAreaPixels) return;
+    if (!capturedFile) return;
     
-    try {
-      const croppedFile = await createCroppedImage();
-      if (croppedFile) {
-        setCapturedFile(croppedFile);
-        await uploadImage(croppedFile);
-      } else {
-        // Fallback to original file if crop failed
-        await uploadImage(capturedFile);
-      }
-    } catch (error) {
-      console.error("Error during confirmation:", error);
-      await uploadImage(capturedFile);
-    }
+    await uploadImage(capturedFile);
     
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
     setCapturedFile(null);
     setPreviewUrl(null);
-    setShowCropModal(false);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
   };
 
   return (
@@ -460,76 +383,24 @@ export default function MobilePage() {
           />
         </div>
 
-        {previewUrl && showCropModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-2 sm:p-4">
-            <div className="w-full h-full max-w-4xl max-h-screen flex flex-col rounded-xl bg-slate-950 p-4 sm:p-6 text-white shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Mark Your Document Area</h2>
+        {previewUrl && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+            <div className="max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl">
+              <h3 className="mb-4 text-lg font-semibold text-center">Preview</h3>
+              <img src={previewUrl} alt="Preview" className="mb-4 max-h-[60vh] w-full object-contain rounded-lg" />
+              <div className="flex gap-3">
                 <button
                   onClick={handleRetake}
-                  className="text-gray-400 hover:text-white text-2xl"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-              
-              <div className="relative flex-1 mb-4 bg-black rounded-lg overflow-hidden min-h-0">
-                <Cropper
-                  image={previewUrl}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={9 / 16}
-                  cropShape="rect"
-                  showGrid
-                  onCropChange={setCrop}
-                  onCropComplete={(croppedArea, croppedAreaPixels) => {
-                    setCroppedAreaPixels(croppedAreaPixels);
-                  }}
-                  onZoomChange={setZoom}
-                  objectFit="contain"
-                  restrictions={(mediaSize, containerSize, state) => {
-                    return [];
-                  }}
-                />
-              </div>
-
-              <div className="mb-4 space-y-3">
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Zoom ({zoom.toFixed(1)}x)</label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="3"
-                    step="0.1"
-                    value={zoom}
-                    onChange={(e) => setZoom(parseFloat(e.target.value))}
-                    className="w-full accent-emerald-500"
-                  />
-                </div>
-
-                <div className="rounded-lg bg-slate-900/70 p-3">
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    ✓ Aspect Ratio: 9:16 (Portrait)<br/>
-                    ✓ Drag to position the document area<br/>
-                    ✓ Use zoom slider to adjust view
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-auto">
-                <button
-                  onClick={handleRetake}
-                  className="flex-1 rounded-lg border border-white/20 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+                  className="flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-100"
                 >
                   Retake
                 </button>
                 <button
                   onClick={handleConfirm}
-                  disabled={isUploading || !croppedAreaPixels}
-                  className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isUploading}
+                  className="flex-1 rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isUploading ? "Uploading..." : "Confirm & Upload"}
+                  {isUploading ? "Uploading..." : "Upload"}
                 </button>
               </div>
             </div>
