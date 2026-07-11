@@ -177,7 +177,7 @@ export default function PrivacyPolicyPage() {
 
           <p>
             Xeniso is not directed toward children
-            under the age of 13, and we do not knowingly
+            under the age of 14, and we do not knowingly
             collect personal information from children.
           </p>
 

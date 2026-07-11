@@ -35,7 +35,7 @@ export default function AboutPage() {
 
           <p>
             In today's digital world, people often need to
-            compress PDFs, resize images, convert files,
+            scan pdf, compress PDFs, resize images, convert files, remove backgrounds,
             generate QR codes, create seals, and perform many
             other tasks. Unfortunately, many online tools are
             either complicated, expensive, or require
@@ -148,8 +148,11 @@ export default function AboutPage() {
         <div className="mt-6 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
 
           {[
+            "PDF Scanner",
             "PDF Compressor",
+            "Image to PDF",
             "PDF Splitter",
+            "Merge PDF",
             "Image Compressor",
             "Image Converter",
             "Image Resizer",

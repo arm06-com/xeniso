@@ -54,7 +54,7 @@ export default function ContactPage() {
             href="mailto:support@xeniso.com"
             className="inline-block mt-5 sm:mt-6 text-blue-600 font-medium hover:underline break-all"
           >
-            support@xeniso.com
+            info@xeniso.com
           </a>
 
         </div>
@@ -80,7 +80,7 @@ export default function ContactPage() {
             href="mailto:business@xeniso.com"
             className="inline-block mt-5 sm:mt-6 text-blue-600 font-medium hover:underline break-all"
           >
-            business@xeniso.com
+            info@xeniso.com
           </a>
 
         </div>
