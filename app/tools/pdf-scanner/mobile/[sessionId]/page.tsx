@@ -108,7 +108,6 @@ export default function MobilePage() {
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
   const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
-  const [pendingReplacementId, setPendingReplacementId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
   const queuedImagesRef = useRef<QueuedImage[]>([]);
 
@@ -194,16 +193,10 @@ export default function MobilePage() {
         const nextId = crypto.randomUUID();
 
         setQueuedImages((prev) => {
-          const existingPreview = prev.find((item) => item.id === activeImageId);
-          if (existingPreview?.previewUrl) {
-            URL.revokeObjectURL(existingPreview.previewUrl);
-          }
-
           return [...prev, { id: nextId, file: compressed, previewUrl, manualCorners: createDefaultManualCorners() }];
         });
 
         setActiveImageId(nextId);
-        setPendingReplacementId(null);
         setStatus("Page captured locally. Adjust the corners and review it below.");
         setIsUploading(false);
         return true;
@@ -299,28 +292,15 @@ export default function MobilePage() {
     );
   };
 
-  const addOrReplaceQueuedImage = (file: File, replacementId: string | null = null) => {
+  const addOrReplaceQueuedImage = (file: File) => {
     const previewUrl = URL.createObjectURL(file);
-    const nextId = replacementId ?? crypto.randomUUID();
+    const nextId = crypto.randomUUID();
 
     setQueuedImages((prev) => {
-      const existingItem = replacementId ? prev.find((item) => item.id === replacementId) : undefined;
-
-      if (existingItem?.previewUrl) {
-        URL.revokeObjectURL(existingItem.previewUrl);
-      }
-
-      if (replacementId) {
-        return prev.map((item) =>
-          item.id === replacementId ? { ...item, file, previewUrl, manualCorners: createDefaultManualCorners() } : item
-        );
-      }
-
       return [...prev, { id: nextId, file, previewUrl, manualCorners: createDefaultManualCorners() }];
     });
 
     setActiveImageId(nextId);
-    setPendingReplacementId(null);
   };
 
   const handleImageCapture = async (event: { target: HTMLInputElement }) => {
@@ -328,12 +308,7 @@ export default function MobilePage() {
 
     if (!file) return;
 
-    if (pendingReplacementId) {
-      addOrReplaceQueuedImage(file, pendingReplacementId);
-    } else {
-      addOrReplaceQueuedImage(file);
-    }
-
+    addOrReplaceQueuedImage(file);
     event.target.value = "";
   };
 
@@ -343,14 +318,6 @@ export default function MobilePage() {
 
   const handleGalleryClick = () => {
     galleryInputRef.current?.click();
-  };
-
-  const handleRetake = () => {
-    if (activeImageId) {
-      setPendingReplacementId(activeImageId);
-    }
-
-    cameraInputRef.current?.click();
   };
 
   const handleDelete = (imageId: string) => {
@@ -426,7 +393,6 @@ export default function MobilePage() {
 
     setQueuedImages([]);
     setActiveImageId(null);
-    setPendingReplacementId(null);
   };
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
@@ -557,12 +523,6 @@ export default function MobilePage() {
                   className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-100"
                 >
                   Reset corners
-                </button>
-                <button
-                  onClick={handleRetake}
-                  className="flex-1 rounded-lg border border-slate-300 px-4 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-100"
-                >
-                  Retake
                 </button>
                 <button
                   onClick={() => handleDelete(activeImageId!)}
