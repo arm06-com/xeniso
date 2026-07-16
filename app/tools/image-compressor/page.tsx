@@ -3,18 +3,9 @@
 import { useRef, useState } from "react";
 import imageCompression from "browser-image-compression";
 
-import type { Metadata } from "next";
 import ToolLayout from "@/components/ToolLayout";
 import ToolFaq from "@/components/ToolFaq";
 import AdBanner from "@/components/AdBanner";
-
-export const metadata: Metadata = {
-  title: "Free Image Compressor Online | Reduce Image Size",
-  description: "Compress JPG, PNG, and WebP images online for free to reduce file size without losing much quality.",
-  alternates: {
-    canonical: "/tools/image-compressor",
-  },
-};
 
 export default function ImageCompressorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
