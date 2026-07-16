@@ -373,6 +373,37 @@ export default function MobilePage() {
     });
   };
 
+  const applyActiveCrop = async () => {
+    if (!activeImageId) {
+      return;
+    }
+
+    const currentImage = queuedImages.find((item) => item.id === activeImageId);
+
+    if (!currentImage) {
+      return;
+    }
+
+    const croppedFile = await createCroppedFile(currentImage.file, currentImage.manualCorners);
+    const previewUrl = URL.createObjectURL(croppedFile);
+
+    setQueuedImages((prev) => {
+      const previousItem = prev.find((item) => item.id === activeImageId);
+
+      if (previousItem?.previewUrl) {
+        URL.revokeObjectURL(previousItem.previewUrl);
+      }
+
+      return prev.map((item) =>
+        item.id === activeImageId
+          ? { ...item, file: croppedFile, previewUrl, manualCorners: createDefaultManualCorners() }
+          : item
+      );
+    });
+
+    setStatus("Page area updated. The cropped version is ready to review.");
+  };
+
   const handleSubmitAll = async () => {
     if (queuedImages.length === 0) {
       return;
@@ -524,7 +555,10 @@ export default function MobilePage() {
                   Delete
                 </button>
                 <button
-                  onClick={() => setActiveImageId(null)}
+                  onClick={async () => {
+                    await applyActiveCrop();
+                    setActiveImageId(null);
+                  }}
                   className="flex-1 rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
                 >
                   Done

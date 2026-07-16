@@ -137,16 +137,25 @@ export default function PdfScannerPage() {
   const [sessionId] = useState(() => (typeof window !== "undefined" ? crypto.randomUUID() : ""));
   const [images, setImages] = useState<ScannerPage[]>([]);
   const [qrCode, setQrCode] = useState("");
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [connected, setConnected] = useState(false);
   const [isCreatingPdf, setIsCreatingPdf] = useState(false);
   const [croppingId, setCroppingId] = useState<string | null>(null);
   const [cropPreviewUrl, setCropPreviewUrl] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const [selection, setSelection] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const selectingRef = useRef(false);
   const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
   const [draggedId, setDraggedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsMobileDevice(/Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent));
+    }
+  }, []);
 
   useEffect(() => {
     if (!sessionId || !origin) return;
@@ -313,6 +322,41 @@ export default function PdfScannerPage() {
 
   const handleDelete = (id: string) => {
     setImages((prev) => prev.filter((page) => page.id !== id));
+  };
+
+  const handleMobileImageCapture = async (event: { target: HTMLInputElement }) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const id = crypto.randomUUID();
+
+      setImages((prev) => [...prev, { id, dataUrl, rotation: 0, zoom: 1 }]);
+      setCroppingId(id);
+      setCropPreviewUrl(dataUrl);
+      setSelection(null);
+    };
+
+    reader.onerror = () => {
+      console.error("Failed to read selected image");
+    };
+
+    reader.readAsDataURL(file);
+    event.target.value = "";
+  };
+
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleGalleryClick = () => {
+    galleryInputRef.current?.click();
   };
 
   const handleDragStart = (id: string) => {
@@ -493,19 +537,63 @@ export default function PdfScannerPage() {
               Open the QR code on your phone, capture each page, and manage everything from desktop workspace.
             </p>
 
-            <div className="rounded-2xl border border-orange-400 bg-white p-4 text-center mt-8">
-              <p className="text-sm font-medium text-slate-600">Connection status</p>
-              <p className={`mt-2 text-lg font-semibold ${connected ? "text-emerald-600" : "text-amber-600"}`}>
-                {connected ? "🟢 Mobile connected" : "🟡 Waiting for mobile"}
-              </p>
-            </div>
+            {isMobileDevice ? (
+              <div className="mt-8 rounded-2xl border border-sky-400 bg-white p-4 text-left">
+                <p className="text-sm font-semibold text-slate-700">Direct mobile capture</p>
+                <p className="mt-2 text-sm text-slate-600">
+                  Use your camera or gallery directly on this phone to capture pages and download a PDF without scanning a QR code.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={handleGalleryClick}
+                    className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  >
+                    Choose from gallery
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCameraClick}
+                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+                  >
+                    Capture photo
+                  </button>
+                </div>
+                <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleMobileImageCapture} />
+                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleMobileImageCapture} />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-orange-400 bg-white p-4 text-center mt-8">
+                <p className="text-sm font-medium text-slate-600">Connection status</p>
+                <p className={`mt-2 text-lg font-semibold ${connected ? "text-emerald-600" : "text-amber-600"}`}>
+                  {connected ? "🟢 Mobile connected" : "🟡 Waiting for mobile"}
+                </p>
+              </div>
+            )}
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
-            <p className="mt-2 text-sm text-slate-600">Open the QR code scanner on your mobile device to start scanning.</p>
+            {isMobileDevice ? (
+              <>
+                <h2 className="text-lg font-semibold text-slate-900">Direct mobile capture</h2>
+                <p className="mt-2 text-sm text-slate-600">Capture from this phone and download the finished PDF without any QR step.</p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold text-slate-900">Connect your phone</h2>
+                <p className="mt-2 text-sm text-slate-600">Open the QR code scanner on your mobile device to start scanning.</p>
+              </>
+            )}
 
             <div className="mt-6 flex justify-center">
-              {qrCode ? <img src={qrCode} alt="Mobile connection QR code" className="h-64 w-64 rounded-2xl border border-slate-200 bg-white p-2" /> : <div className="h-64 w-64 animate-pulse rounded-2xl bg-slate-200" />}
+              {isMobileDevice ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
+                  Use the capture buttons above to add pages and build your PDF directly from this device.
+                </div>
+              ) : qrCode ? (
+                <img src={qrCode} alt="Mobile connection QR code" className="h-64 w-64 rounded-2xl border border-slate-200 bg-white p-2" />
+              ) : (
+                <div className="h-64 w-64 animate-pulse rounded-2xl bg-slate-200" />
+              )}
             </div>
           </div>
         </div>
