@@ -4,6 +4,9 @@ export const metadata: Metadata = {
   title: "Disclaimer | Xeniso",
   description:
     "Read Xeniso's disclaimer regarding the use of our free online tools and services.",
+  alternates: {
+    canonical: "/disclaimer",
+  },
 };
 
 export default function DisclaimerPage() {

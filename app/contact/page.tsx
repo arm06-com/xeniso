@@ -7,9 +7,12 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact Us | Xeniso",
+  title: "Contact Xeniso | Support and Feedback",
   description:
-    "Get in touch with Xeniso for questions, support, feedback, or business inquiries.",
+    "Get in touch with Xeniso for questions, support, feedback, or business inquiries about our online PDF and image tools.",
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 export default function ContactPage() {

@@ -1,5 +1,15 @@
 import ToolSearch from "@/components/ToolSearch";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Free Online PDF and Image Tools",
+  description:
+    "Convert, compress, scan, and edit PDFs and images with Xeniso's free online tools for fast document and image processing.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 const tools = [
   {

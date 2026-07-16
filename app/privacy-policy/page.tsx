@@ -3,7 +3,10 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy | Xeniso",
   description:
-    "Learn how Xeniso protects your privacy and handles your data while using our free online tools.",
+    "Learn how Xeniso protects your privacy and handles your data while using our free online PDF and image tools.",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

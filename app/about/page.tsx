@@ -1,9 +1,12 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us | Xeniso",
+  title: "About Xeniso | Free Online PDF and Image Tools",
   description:
-    "Learn more about Xeniso and our mission to provide free, fast, and privacy-focused online productivity tools.",
+    "Learn more about Xeniso and how our free online PDF and image tools help users convert, edit, and manage documents effortlessly.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {

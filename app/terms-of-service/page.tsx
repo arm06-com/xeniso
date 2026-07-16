@@ -4,6 +4,9 @@ export const metadata: Metadata = {
   title: "Terms of Service | Xeniso",
   description:
     "Read the Terms of Service governing the use of Xeniso's free online PDF and image tools.",
+  alternates: {
+    canonical: "/terms-of-service",
+  },
 };
 
 export default function TermsOfServicePage() {

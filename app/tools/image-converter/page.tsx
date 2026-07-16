@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import ToolLayout from "@/components/ToolLayout";
 import ToolFaq from "@/components/ToolFaq";
 import ImageConverter from "@/components/ImageConverter";
+
+export const metadata: Metadata = {
+  title: "Free Image Converter Online | JPG PNG WebP Converter",
+  description: "Convert JPG, PNG, and WebP images online for free with Xeniso's fast image converter.",
+  alternates: {
+    canonical: "/tools/image-converter",
+  },
+};
 
 export default function ImageConverterPage() {
   return (

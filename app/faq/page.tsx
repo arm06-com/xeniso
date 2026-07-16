@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "FAQ",
+  title: "FAQ | PDF and Image Tool Help",
   description:
-    "Frequently Asked Questions about Xeniso online tools.",
+    "Get answers to common questions about Xeniso's online PDF scanner, converter, compressor, and other productivity tools.",
+  alternates: {
+    canonical: "/faq",
+  },
 };
 
 const faqs = [

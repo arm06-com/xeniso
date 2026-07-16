@@ -2,9 +2,18 @@
 
 import { useRef, useState } from "react";
 
+import type { Metadata } from "next";
 import ToolLayout from "@/components/ToolLayout";
 import ToolFaq from "@/components/ToolFaq";
 import AdBanner from "@/components/AdBanner";
+
+export const metadata: Metadata = {
+  title: "JPG to PNG Converter Online | Convert JPG to PNG",
+  description: "Convert JPG and JPEG images to PNG format online for free with Xeniso's simple converter tool.",
+  alternates: {
+    canonical: "/tools/jpg-to-png",
+  },
+};
 
 export default function JPGToPNGPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);

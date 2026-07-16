@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Blog | PDF and Image Tool Guides",
+  description: "Explore Xeniso blog posts with guides, tips, and tutorials for PDF scanning, conversion, compression, and image editing.",
+  alternates: {
+    canonical: "/blog",
+  },
+};
 import { blogs } from "@/data/blogs";
 
 export default function BlogPage() {

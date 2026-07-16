@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Tool Categories | PDF and Image Utilities",
+  description: "Browse Xeniso tool categories to find the best PDF and image utilities for your document editing needs.",
+  alternates: {
+    canonical: "/categories",
+  },
+};
 
 const categories = [
   {
