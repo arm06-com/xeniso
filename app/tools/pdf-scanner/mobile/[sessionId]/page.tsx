@@ -521,8 +521,24 @@ export default function MobilePage() {
                     points={activeImage.manualCorners
                       .map((point) => `${point.x * 100}% ${point.y * 100}%`)
                       .join(" ")}
-                    className="fill-sky-500/10 stroke-sky-600 stroke-[3]"
+                    className="fill-sky-500/15"
+                    style={{ stroke: "rgba(56, 189, 248, 0.9)", strokeWidth: 3, strokeDasharray: "12 8" }}
                   />
+                  {activeImage.manualCorners.map((point, index) => {
+                    const nextPoint = activeImage.manualCorners[(index + 1) % activeImage.manualCorners.length];
+                    return (
+                      <line
+                        key={`edge-${index}`}
+                        x1={`${point.x * 100}%`}
+                        y1={`${point.y * 100}%`}
+                        x2={`${nextPoint.x * 100}%`}
+                        y2={`${nextPoint.y * 100}%`}
+                        stroke="rgba(56, 189, 248, 0.9)"
+                        strokeWidth={2}
+                        strokeDasharray="8 6"
+                      />
+                    );
+                  })}
                 </svg>
                 {activeImage.manualCorners.map((point, index) => (
                   <button
