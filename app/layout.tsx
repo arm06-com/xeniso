@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     "seal maker",
     "qr generator",
     "document tools",
+    "pdf-scanner",
   ],
   alternates: {
     canonical: "/",
