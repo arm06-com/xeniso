@@ -514,16 +514,17 @@ export default function MobilePage() {
     {/* IMAGE EDITOR MODE */}
     {previewImage && (
 
-      <div className="h-full flex flex-col">
+      <div className="relative h-full flex flex-col">
 
 
         {/* Top floating buttons */}
-        <div className="absolute top-4 left-0 right-0 z-20 flex justify-center gap-4">
+        <div className="pointer-events-none absolute inset-x-0 top-4 z-30 flex justify-center gap-4">
 
 
           <button
+            type="button"
             onClick={handleGalleryClick}
-            className="rounded-full bg-slate-900/80 px-5 py-3 text-white"
+            className="pointer-events-auto rounded-full bg-slate-900/80 px-5 py-3 text-white"
             aria-label="Choose from gallery"
           >
             <Images className="h-5 w-5" />
@@ -531,8 +532,9 @@ export default function MobilePage() {
 
 
           <button
+            type="button"
             onClick={handleCameraClick}
-            className="rounded-full bg-sky-600 px-5 py-3 text-white"
+            className="pointer-events-auto rounded-full bg-sky-600 px-5 py-3 text-white"
             aria-label="Open camera"
           >
             <Camera className="h-5 w-5" />
@@ -546,15 +548,16 @@ export default function MobilePage() {
 
         {/* IMAGE AREA */}
 
-        <div className="flex-1 flex items-center justify-center bg-slate-900 p-3">
+        <div className="relative flex-1 flex items-center justify-center overflow-hidden bg-slate-900 p-3">
 
 
           <div
             ref={previewContainerRef}
-            className="relative w-full h-full flex items-center justify-center"
+            className="relative flex h-full w-full items-center justify-center overflow-hidden"
             onPointerMove={handlePreviewPointerMove}
             onPointerUp={handlePreviewPointerUp}
             onPointerLeave={handlePreviewPointerUp}
+            onPointerCancel={handlePreviewPointerUp}
             style={{touchAction:"none"}}
           >
 
@@ -607,17 +610,11 @@ export default function MobilePage() {
 
               <button
                 key={index}
+                type="button"
                 onPointerDown={(e)=>
                   handlePreviewPointerDown(e,index)
                 }
-                className="
-                absolute h-6 w-6
-                rounded-full
-                bg-sky-500
-                border-2 border-white
-                -translate-x-1/2
-                -translate-y-1/2
-                "
+                className="absolute z-40 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-sky-500 shadow"
                 style={{
                   left:`${point.x*100}%`,
                   top:`${point.y*100}%`
@@ -636,12 +633,13 @@ export default function MobilePage() {
 
         {/* BOTTOM ACTIONS */}
 
-        <div className="bg-slate-950 p-3">
+        <div className="relative z-30 bg-slate-950 p-3">
 
           <div className="grid grid-cols-4 gap-2">
 
 
             <button
+              type="button"
               onClick={handleRotatePreview}
               className="rounded-xl bg-slate-700 py-3 text-white"
             >
@@ -654,6 +652,7 @@ export default function MobilePage() {
 
 
             <button
+              type="button"
               onClick={handleRetryCapture}
               className="rounded-xl bg-orange-600 py-3 text-white"
             >
@@ -666,6 +665,7 @@ export default function MobilePage() {
 
 
             <button
+              type="button"
               onClick={()=>{
                 if(draftImage?.previewUrl)
                 URL.revokeObjectURL(
@@ -685,6 +685,7 @@ export default function MobilePage() {
 
 
             <button
+              type="button"
               onClick={handleSubmitAll}
               className="rounded-xl bg-green-600 py-3 text-white"
             >
