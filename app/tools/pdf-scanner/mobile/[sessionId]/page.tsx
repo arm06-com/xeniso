@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useParams } from "next/navigation";
 import imageCompression from "browser-image-compression";
+import { Camera, Images, RotateCw, Trash2, Upload, X } from "lucide-react";
 
 type Point = {
   x: number;
@@ -467,9 +468,10 @@ export default function MobilePage() {
           {/* Gallery */}
           <button
             onClick={handleGalleryClick}
-            className="h-20 w-20 rounded-full bg-slate-800 border border-white/20 text-3xl"
+            className="flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-slate-800 text-white"
+            aria-label="Choose from gallery"
           >
-            🖼️
+            <Images className="h-8 w-8" />
           </button>
 
 
@@ -483,9 +485,10 @@ export default function MobilePage() {
           {/* Camera */}
           <button
             onClick={handleCameraClick}
-            className="h-20 w-20 rounded-full bg-sky-600 text-3xl shadow-lg"
+            className="flex h-20 w-20 items-center justify-center rounded-full bg-sky-600 text-white shadow-lg"
+            aria-label="Open camera"
           >
-            📷
+            <Camera className="h-8 w-8" />
           </button>
 
 
@@ -520,17 +523,19 @@ export default function MobilePage() {
 
           <button
             onClick={handleGalleryClick}
-            className="rounded-full bg-slate-900/80 px-5 py-3"
+            className="rounded-full bg-slate-900/80 px-5 py-3 text-white"
+            aria-label="Choose from gallery"
           >
-            🖼️
+            <Images className="h-5 w-5" />
           </button>
 
 
           <button
             onClick={handleCameraClick}
-            className="rounded-full bg-sky-600 px-5 py-3"
+            className="rounded-full bg-sky-600 px-5 py-3 text-white"
+            aria-label="Open camera"
           >
-            📷
+            <Camera className="h-5 w-5" />
           </button>
 
 
@@ -563,22 +568,39 @@ export default function MobilePage() {
             />
 
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
-
-
               <polygon
-                points={
-                  previewImage.manualCorners
-                  .map(
-                    p=>`${p.x*100}% ${p.y*100}%`
-                  )
-                  .join(" ")
-                }
+                points={previewImage.manualCorners.map((p) => `${p.x * 100}% ${p.y * 100}%`).join(" ")}
                 fill="rgba(56,189,248,.15)"
                 stroke="#38bdf8"
                 strokeWidth="3"
                 strokeDasharray="10 6"
               />
-
+              {previewImage.manualCorners.map((point, index) => {
+                const nextPoint = previewImage.manualCorners[(index + 1) % previewImage.manualCorners.length];
+                return (
+                  <line
+                    key={`edge-${index}`}
+                    x1={`${point.x * 100}%`}
+                    y1={`${point.y * 100}%`}
+                    x2={`${nextPoint.x * 100}%`}
+                    y2={`${nextPoint.y * 100}%`}
+                    stroke="#38bdf8"
+                    strokeWidth="2"
+                    strokeDasharray="8 6"
+                  />
+                );
+              })}
+              {previewImage.manualCorners.map((point) => (
+                <circle
+                  key={`${point.x}-${point.y}`}
+                  cx={`${point.x * 100}%`}
+                  cy={`${point.y * 100}%`}
+                  r="7"
+                  fill="#0f172a"
+                  stroke="#38bdf8"
+                  strokeWidth="2"
+                />
+              ))}
             </svg>
 
             {previewImage.manualCorners.map((point,index)=>(
@@ -621,10 +643,10 @@ export default function MobilePage() {
 
             <button
               onClick={handleRotatePreview}
-              className="rounded-xl bg-slate-700 py-3"
+              className="rounded-xl bg-slate-700 py-3 text-white"
             >
-              🔄
-              <div className="text-xs">
+              <RotateCw className="mx-auto h-5 w-5" />
+              <div className="mt-1 text-xs">
                 Rotate
               </div>
             </button>
@@ -633,10 +655,10 @@ export default function MobilePage() {
 
             <button
               onClick={handleRetryCapture}
-              className="rounded-xl bg-orange-600 py-3"
+              className="rounded-xl bg-orange-600 py-3 text-white"
             >
-              📷
-              <div className="text-xs">
+              <Camera className="mx-auto h-5 w-5" />
+              <div className="mt-1 text-xs">
                 Retake
               </div>
             </button>
@@ -652,10 +674,10 @@ export default function MobilePage() {
 
                 setDraftImage(null);
               }}
-              className="rounded-xl bg-red-600 py-3"
+              className="rounded-xl bg-red-600 py-3 text-white"
             >
-              🗑
-              <div className="text-xs">
+              <Trash2 className="mx-auto h-5 w-5" />
+              <div className="mt-1 text-xs">
                 Delete
               </div>
             </button>
@@ -664,10 +686,10 @@ export default function MobilePage() {
 
             <button
               onClick={handleSubmitAll}
-              className="rounded-xl bg-green-600 py-3"
+              className="rounded-xl bg-green-600 py-3 text-white"
             >
-              ⬆
-              <div className="text-xs">
+              <Upload className="mx-auto h-5 w-5" />
+              <div className="mt-1 text-xs">
                 Submit
               </div>
             </button>
@@ -709,17 +731,10 @@ export default function MobilePage() {
                   onClick={()=>
                     handleDelete(item.id)
                   }
-                  className="
-                  absolute
-                  -top-2
-                  -right-2
-                  bg-red-600
-                  rounded-full
-                  h-5
-                  w-5
-                  "
+                  className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white"
+                  aria-label="Delete thumbnail"
                 >
-                  ×
+                  <X className="h-3.5 w-3.5" />
                 </button>
 
 
