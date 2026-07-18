@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useParams } from "next/navigation";
 import imageCompression from "browser-image-compression";
-import { Camera, FileText, Images, RotateCw, Trash2, Upload, X } from "lucide-react";
-import { PDFDocument } from "pdf-lib";
+import { Camera, Images, RotateCw, Trash2, Upload, X } from "lucide-react";
 
 type Point = {
   x: number;
@@ -149,7 +148,6 @@ export default function MobilePage() {
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
   const [draftImage, setDraftImage] = useState<QueuedImage | null>(null);
-  const [isCreatingPdf, setIsCreatingPdf] = useState(false);
   const queuedImagesRef = useRef<QueuedImage[]>([]);
 
   useEffect(() => {
@@ -490,50 +488,6 @@ export default function MobilePage() {
     setStatus("All pages are ready locally and uploaded to the desktop workspace.");
   };
 
-  const handleCreatePdf = async () => {
-    if (queuedImages.length === 0) {
-      return;
-    }
-
-    setIsCreatingPdf(true);
-
-    try {
-      const pdfDoc = await PDFDocument.create();
-
-      for (const item of queuedImages) {
-        const preparedFile = await createCroppedFile(item.file, item.manualCorners, item.rotation);
-        const arrayBuffer = await preparedFile.arrayBuffer();
-        const isPng = preparedFile.type.includes("png");
-        const image = isPng ? await pdfDoc.embedPng(new Uint8Array(arrayBuffer)) : await pdfDoc.embedJpg(new Uint8Array(arrayBuffer));
-        const page = pdfDoc.addPage([595.28, 841.89]);
-        const scale = Math.min(595.28 / image.width, 841.89 / image.height);
-        const drawWidth = image.width * scale;
-        const drawHeight = image.height * scale;
-
-        page.drawImage(image, {
-          x: (595.28 - drawWidth) / 2,
-          y: (841.89 - drawHeight) / 2,
-          width: drawWidth,
-          height: drawHeight,
-        });
-      }
-
-      const pdfBytes = await pdfDoc.save();
-      const pdfBuffer = new Uint8Array(pdfBytes);
-      const blob = new Blob([pdfBuffer.buffer.slice(pdfBuffer.byteOffset, pdfBuffer.byteOffset + pdfBuffer.byteLength)], { type: "application/pdf" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "xeniso-scanned-pages.pdf";
-      link.click();
-      URL.revokeObjectURL(link.href);
-      setStatus("PDF generated successfully.");
-    } catch {
-      setStatus("Unable to create PDF. Please try again.");
-    } finally {
-      setIsCreatingPdf(false);
-    }
-  };
-
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
   const previewImage = draftImage ?? activeImage;
 
@@ -543,7 +497,7 @@ export default function MobilePage() {
     {!previewImage && (
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
 
-        <div className="rounded-full border border-green-400/30 bg-green-500/10 px-6 py-3 text-green-300">
+        <div className="items-center justify-center rounded-full border border-green-400/30 bg-green-500/10 px-6 py-3 text-green-300">
           ● {status}
         </div>
         {/* Capture Buttons */}
@@ -602,7 +556,7 @@ export default function MobilePage() {
 
 
         {/* Top floating buttons */}
-        <div className="pointer-events-none z-30 flex justify-center gap-4">
+        <div className="pointer-events-none my-2 z-30 flex justify-center gap-4">
 
 
           <button
@@ -632,7 +586,7 @@ export default function MobilePage() {
 
         {/* IMAGE AREA */}
 
-        <div className="flex-1 min-h-0 overflow-hidden bg-slate-900 p-2">
+        <div className="flex-1 max-h-70vh overflow-hidden bg-slate-900 p-2">
 
 
           <div
@@ -648,7 +602,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[70vh] max-w-full object-contain rounded-xl"
+              className="max-h-[68vh] max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
@@ -747,18 +701,6 @@ export default function MobilePage() {
               <Trash2 className="mx-auto h-5 w-5" />
               <div className="mt-1 text-xs">
                 Delete
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleCreatePdf}
-              disabled={queuedImages.length === 0 || isCreatingPdf}
-              className="rounded-xl bg-violet-600 py-2 text-white disabled:cursor-not-allowed disabled:bg-violet-400"
-            >
-              <FileText className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">
-                {isCreatingPdf ? "Creating" : "Create PDF"}
               </div>
             </button>
 
