@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useParams } from "next/navigation";
 import imageCompression from "browser-image-compression";
-import { Camera, Images, RotateCw, Trash2, Upload, X } from "lucide-react";
+import { Camera, FileText, Images, RotateCw, Trash2, Upload, X } from "lucide-react";
+import { PDFDocument } from "pdf-lib";
 
 type Point = {
   x: number;
@@ -148,6 +149,7 @@ export default function MobilePage() {
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
   const [draftImage, setDraftImage] = useState<QueuedImage | null>(null);
+  const [isCreatingPdf, setIsCreatingPdf] = useState(false);
   const queuedImagesRef = useRef<QueuedImage[]>([]);
 
   useEffect(() => {
@@ -231,38 +233,47 @@ export default function MobilePage() {
     );
   };
 
-  const uploadImage = async (file: File, points: Point[] = []): Promise<boolean> => {
+  const createQueuedImageFromFile = async (file: File, points: Point[] = [], rotation = 0) => {
+    const preparedFile = await createCroppedFile(file, points, rotation);
+    const compressed = await imageCompression(preparedFile, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 1600,
+      useWebWorker: true,
+    });
+
+    const previewUrl = URL.createObjectURL(compressed);
+    const nextId = crypto.randomUUID();
+
+    return {
+      id: nextId,
+      file: compressed,
+      previewUrl,
+      manualCorners: points.map((point) => ({ ...point })),
+      rotation,
+    } satisfies QueuedImage;
+  };
+
+  const uploadImage = async (file: File, points: Point[] = [], rotation = 0, persistLocally = false): Promise<boolean> => {
     try {
       setIsUploading(true);
       setStatus("Preparing page...");
 
-      if (isStandaloneMode) {
-        const preparedFile = await createCroppedFile(file, points, 0);
-        const compressed = await imageCompression(preparedFile, {
-          maxSizeMB: 0.5,
-          maxWidthOrHeight: 1600,
-          useWebWorker: true,
-        });
+      const queuedItem = await createQueuedImageFromFile(file, points, rotation);
 
-        const previewUrl = URL.createObjectURL(compressed);
-        const nextId = crypto.randomUUID();
+      if (isStandaloneMode || persistLocally) {
+        setQueuedImages((prev) => [...prev, queuedItem]);
+        setActiveImageId(queuedItem.id);
 
-        setQueuedImages((prev) => {
-          return [...prev, { id: nextId, file: compressed, previewUrl, manualCorners: createDefaultManualCorners(), rotation: 0 }];
-        });
-
-        setActiveImageId(nextId);
-        setStatus("Page captured locally. Adjust the corners and review it below.");
-        setIsUploading(false);
-        return true;
+        if (isStandaloneMode) {
+          setStatus("Page captured locally. Adjust the corners and review it below.");
+          setIsUploading(false);
+          return true;
+        }
       }
 
-      const preparedFile = await createCroppedFile(file, points);
-      const compressed = await imageCompression(preparedFile, {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1600,
-        useWebWorker: true,
-      });
+      if (isStandaloneMode) {
+        return true;
+      }
 
       const reader = new FileReader();
 
@@ -301,7 +312,7 @@ export default function MobilePage() {
           resolve(false);
         };
 
-        reader.readAsDataURL(compressed);
+        reader.readAsDataURL(queuedItem.file);
       });
     } catch {
       setStatus("Unable to process the image. Please try again.");
@@ -338,11 +349,18 @@ export default function MobilePage() {
   };
 
   const handleRotatePreview = () => {
-    if (!draftImage) {
+    if (draftImage) {
+      setDraftImage((prev) => (prev ? { ...prev, rotation: (prev.rotation + 90) % 360 } : prev));
       return;
     }
 
-    setDraftImage((prev) => (prev ? { ...prev, rotation: (prev.rotation + 90) % 360 } : prev));
+    if (!activeImageId) {
+      return;
+    }
+
+    setQueuedImages((prev) =>
+      prev.map((item) => (item.id === activeImageId ? { ...item, rotation: (item.rotation + 90) % 360 } : item))
+    );
   };
 
   const prepareDraftImage = async (file: File) => {
@@ -411,9 +429,28 @@ export default function MobilePage() {
     }, 120);
   };
 
+  const handleDeletePreview = () => {
+    if (draftImage) {
+      if (draftImage.previewUrl) {
+        URL.revokeObjectURL(draftImage.previewUrl);
+      }
+
+      setDraftImage(null);
+      setActiveCornerIndex(null);
+      setActiveImageId(null);
+      return;
+    }
+
+    if (!activeImageId) {
+      return;
+    }
+
+    handleDelete(activeImageId);
+  };
+
   const handleSubmitAll = async () => {
     if (draftImage) {
-      const uploaded = await uploadImage(draftImage.file, draftImage.manualCorners);
+      const uploaded = await uploadImage(draftImage.file, draftImage.manualCorners, draftImage.rotation, true);
 
       if (!uploaded) {
         return;
@@ -443,15 +480,58 @@ export default function MobilePage() {
     }
 
     for (const item of queuedImages) {
-      const uploaded = await uploadImage(item.file, item.manualCorners);
+      const uploaded = await uploadImage(item.file, item.manualCorners, item.rotation, true);
 
       if (!uploaded) {
         return;
       }
     }
 
-    setQueuedImages([]);
-    setActiveImageId(null);
+    setStatus("All pages are ready locally and uploaded to the desktop workspace.");
+  };
+
+  const handleCreatePdf = async () => {
+    if (queuedImages.length === 0) {
+      return;
+    }
+
+    setIsCreatingPdf(true);
+
+    try {
+      const pdfDoc = await PDFDocument.create();
+
+      for (const item of queuedImages) {
+        const preparedFile = await createCroppedFile(item.file, item.manualCorners, item.rotation);
+        const arrayBuffer = await preparedFile.arrayBuffer();
+        const isPng = preparedFile.type.includes("png");
+        const image = isPng ? await pdfDoc.embedPng(new Uint8Array(arrayBuffer)) : await pdfDoc.embedJpg(new Uint8Array(arrayBuffer));
+        const page = pdfDoc.addPage([595.28, 841.89]);
+        const scale = Math.min(595.28 / image.width, 841.89 / image.height);
+        const drawWidth = image.width * scale;
+        const drawHeight = image.height * scale;
+
+        page.drawImage(image, {
+          x: (595.28 - drawWidth) / 2,
+          y: (841.89 - drawHeight) / 2,
+          width: drawWidth,
+          height: drawHeight,
+        });
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      const pdfBuffer = new Uint8Array(pdfBytes);
+      const blob = new Blob([pdfBuffer.buffer.slice(pdfBuffer.byteOffset, pdfBuffer.byteOffset + pdfBuffer.byteLength)], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "xeniso-scanned-pages.pdf";
+      link.click();
+      URL.revokeObjectURL(link.href);
+      setStatus("PDF generated successfully.");
+    } catch {
+      setStatus("Unable to create PDF. Please try again.");
+    } finally {
+      setIsCreatingPdf(false);
+    }
   };
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
@@ -518,11 +598,11 @@ export default function MobilePage() {
     {/* IMAGE EDITOR MODE */}
     {previewImage && (
 
-      <div className="relative flex min-h-0 flex-1 flex-col">
+      <div className="relative flex max-h-100vh flex-1 flex-col">
 
 
         {/* Top floating buttons */}
-        <div className="pointer-events-none absolute inset-x-0 top-4 z-30 flex justify-center gap-4">
+        <div className="pointer-events-none z-30 flex justify-center gap-4">
 
 
           <button
@@ -552,12 +632,12 @@ export default function MobilePage() {
 
         {/* IMAGE AREA */}
 
-        <div className="relative flex-1 min-h-0 overflow-hidden bg-slate-900 p-2">
+        <div className="flex-1 min-h-0 overflow-hidden bg-slate-900 p-2">
 
 
           <div
             ref={previewContainerRef}
-            className="relative flex min-h-[220px] w-full items-center justify-center"
+            className="relative flex min-h-55 w-full items-center justify-center"
             onPointerMove={handlePreviewPointerMove}
             onPointerUp={handlePreviewPointerUp}
             onPointerLeave={handlePreviewPointerUp}
@@ -568,7 +648,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[60vh] max-w-full object-contain rounded-xl"
+              className="max-h-[70vh] max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
@@ -661,14 +741,7 @@ export default function MobilePage() {
 
             <button
               type="button"
-              onClick={()=>{
-                if(draftImage?.previewUrl)
-                URL.revokeObjectURL(
-                  draftImage.previewUrl
-                );
-
-                setDraftImage(null);
-              }}
+              onClick={handleDeletePreview}
               className="rounded-xl bg-red-600 py-2 text-white"
             >
               <Trash2 className="mx-auto h-5 w-5" />
@@ -677,7 +750,17 @@ export default function MobilePage() {
               </div>
             </button>
 
-
+            <button
+              type="button"
+              onClick={handleCreatePdf}
+              disabled={queuedImages.length === 0 || isCreatingPdf}
+              className="rounded-xl bg-violet-600 py-2 text-white disabled:cursor-not-allowed disabled:bg-violet-400"
+            >
+              <FileText className="mx-auto h-5 w-5" />
+              <div className="mt-1 text-xs">
+                {isCreatingPdf ? "Creating" : "Create PDF"}
+              </div>
+            </button>
 
             <button
               type="button"
@@ -696,11 +779,6 @@ export default function MobilePage() {
 
         </div>
 
-
-
-
-
-
         {/* THUMBNAILS */}
 
         {queuedImages.length > 0 && (
@@ -717,10 +795,19 @@ export default function MobilePage() {
                 className="relative"
               >
 
-                <img
-                  src={item.previewUrl}
-                  className="h-14 w-14 rounded-lg object-cover border"
-                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraftImage(null);
+                    setActiveImageId(item.id);
+                  }}
+                  className={`rounded-lg border ${activeImageId === item.id ? "border-sky-400" : "border-slate-700"}`}
+                >
+                  <img
+                    src={item.previewUrl}
+                    className="h-14 w-14 rounded-lg object-cover"
+                  />
+                </button>
 
 
                 <button
