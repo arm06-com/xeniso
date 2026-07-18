@@ -552,12 +552,12 @@ export default function MobilePage() {
 
         {/* IMAGE AREA */}
 
-        <div className="relative flex-1 min-h-0 overflow-auto bg-slate-900 p-3">
+        <div className="relative flex-1 min-h-0 overflow-hidden bg-slate-900 p-2">
 
 
           <div
             ref={previewContainerRef}
-            className="relative flex min-h-[220px] w-full items-center justify-center"
+            className="relative flex min-h-[180px] w-full items-center justify-center"
             onPointerMove={handlePreviewPointerMove}
             onPointerUp={handlePreviewPointerUp}
             onPointerLeave={handlePreviewPointerUp}
@@ -568,12 +568,11 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[60vh] max-w-full object-contain rounded-xl"
+              className="max-h-[48vh] max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
             />
-
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
               <polygon
                 points={previewImage.manualCorners.map((p) => `${p.x * 100}% ${p.y * 100}%`).join(" ")}
@@ -609,9 +608,7 @@ export default function MobilePage() {
                 />
               ))}
             </svg>
-
             {previewImage.manualCorners.map((point,index)=>(
-
               <button
                 key={index}
                 type="button"
@@ -624,20 +621,14 @@ export default function MobilePage() {
                   top:`${point.y*100}%`
                 }}
               />
-
-
             ))}
-
-
           </div>
-
-
         </div>
 
 
         {/* BOTTOM ACTIONS */}
 
-        <div className="sticky bottom-0 z-30 border-t border-white/10 bg-slate-950 p-3">
+        <div className="sticky bottom-0 z-30 border-t border-white/10 bg-slate-950 p-2">
 
           <div className="grid grid-cols-4 gap-2">
 
@@ -645,7 +636,7 @@ export default function MobilePage() {
             <button
               type="button"
               onClick={handleRotatePreview}
-              className="rounded-xl bg-slate-700 py-3 text-white"
+              className="rounded-xl bg-slate-700 py-2 text-white"
             >
               <RotateCw className="mx-auto h-5 w-5" />
               <div className="mt-1 text-xs">
@@ -658,7 +649,7 @@ export default function MobilePage() {
             <button
               type="button"
               onClick={handleRetryCapture}
-              className="rounded-xl bg-orange-600 py-3 text-white"
+              className="rounded-xl bg-orange-600 py-2 text-white"
             >
               <Camera className="mx-auto h-5 w-5" />
               <div className="mt-1 text-xs">
@@ -678,7 +669,7 @@ export default function MobilePage() {
 
                 setDraftImage(null);
               }}
-              className="rounded-xl bg-red-600 py-3 text-white"
+              className="rounded-xl bg-red-600 py-2 text-white"
             >
               <Trash2 className="mx-auto h-5 w-5" />
               <div className="mt-1 text-xs">
@@ -691,7 +682,7 @@ export default function MobilePage() {
             <button
               type="button"
               onClick={handleSubmitAll}
-              className="rounded-xl bg-green-600 py-3 text-white"
+              className="rounded-xl bg-green-600 py-2 text-white"
             >
               <Upload className="mx-auto h-5 w-5" />
               <div className="mt-1 text-xs">
