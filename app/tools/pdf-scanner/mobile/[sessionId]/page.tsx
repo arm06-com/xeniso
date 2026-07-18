@@ -138,7 +138,7 @@ export default function MobilePage() {
   const params = useParams();
   const sessionId = params.sessionId as string | undefined;
   const isStandaloneMode = !sessionId;
-  const [status, setStatus] = useState("Connecting to desktop...");
+  const [status, setStatus] = useState(sessionId ? "Connecting to desktop..." : "Direct capture mode enabled. Capture a page and review it here without a QR session.");
   const [isUploading, setIsUploading] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
@@ -182,8 +182,6 @@ export default function MobilePage() {
 
     if (sessionId) {
       void connectToDesktop();
-    } else {
-      setStatus("Direct capture mode enabled. Capture a page and review it here without a QR session.");
     }
   }, [sessionId]);
 
@@ -315,7 +313,7 @@ export default function MobilePage() {
     event: ReactPointerEvent<HTMLElement>,
     cornerIndex: number
   ) => {
-    if (!activeImageId) {
+    if (!previewImage) {
       return;
     }
 
@@ -336,21 +334,6 @@ export default function MobilePage() {
 
   const handlePreviewPointerUp = () => {
     setActiveCornerIndex(null);
-  };
-
-  const resetManualCorners = () => {
-    if (draftImage) {
-      setDraftImage((prev) => (prev ? { ...prev, manualCorners: createDefaultManualCorners() } : prev));
-      return;
-    }
-
-    if (!activeImageId) {
-      return;
-    }
-
-    setQueuedImages((prev) =>
-      prev.map((item) => (item.id === activeImageId ? { ...item, manualCorners: createDefaultManualCorners() } : item))
-    );
   };
 
   const handleRotatePreview = () => {
@@ -488,7 +471,6 @@ export default function MobilePage() {
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
   const previewImage = draftImage ?? activeImage;
-  const hasImages = queuedImages.length > 0 || draftImage;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-white">
@@ -539,9 +521,9 @@ export default function MobilePage() {
 
       {/* Main preview and adjustment area */}
       {previewImage ? (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex min-h-0 flex-col overflow-hidden">
           {/* Image display with corners */}
-          <div className="flex-1 flex items-center justify-center bg-slate-800 p-4 overflow-auto">
+          <div className="flex-1 min-h-0 flex items-center justify-center bg-slate-800 p-4 overflow-auto">
             <div
               ref={previewContainerRef}
               className="relative w-full max-w-full"
@@ -585,7 +567,7 @@ export default function MobilePage() {
                   key={`${index}-${point.x.toFixed(3)}-${point.y.toFixed(3)}`}
                   type="button"
                   aria-label={`Move ${["top-left", "top-right", "bottom-right", "bottom-left"][index]} corner`}
-                  className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-sky-500 shadow"
+                  className="absolute z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-sky-500 shadow pointer-events-auto"
                   style={{ left: `${point.x * 100}%`, top: `${point.y * 100}%` }}
                   onPointerDown={(event) => handlePreviewPointerDown(event, index)}
                 />
@@ -594,7 +576,7 @@ export default function MobilePage() {
           </div>
 
           {/* Control buttons */}
-          <div className="border-t border-white/10 bg-slate-900/70 px-4 py-3 flex items-center gap-3">
+          <div className="relative z-10 border-t border-white/10 bg-slate-900/70 px-4 py-3 flex items-center gap-3">
             <button
               type="button"
               onClick={handleRotatePreview}
