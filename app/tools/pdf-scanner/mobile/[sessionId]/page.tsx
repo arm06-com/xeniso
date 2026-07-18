@@ -579,12 +579,12 @@ export default function MobilePage() {
         </div>
 
         {/* IMAGE AREA */}
-        <div className="flex-1 min-h-50vh overflow-hidden bg-slate-900 p-2">
+        <div className="flex-1 min-h-[55vh] overflow-hidden bg-slate-900 p-2">
 
 
           <div
             ref={previewContainerRef}
-            className="relative flex min-h-55 w-full items-center justify-center"
+            className="relative flex h-full w-full items-center justify-center"
             onPointerMove={handlePreviewPointerMove}
             onPointerUp={handlePreviewPointerUp}
             onPointerLeave={handlePreviewPointerUp}
@@ -595,7 +595,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[48vh] max-w-full object-contain rounded-xl"
+              className="max-h-[55vh] max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
