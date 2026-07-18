@@ -579,7 +579,7 @@ export default function MobilePage() {
         </div>
 
         {/* IMAGE AREA */}
-        <div className="flex-1 min-h-300 overflow-hidden bg-slate-900 p-2">
+        <div className="flex-1 min-h-60vh overflow-hidden bg-slate-900 p-2">
 
 
           <div
@@ -595,7 +595,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[60vh] max-w-full object-contain rounded-xl"
+              className="max-h-[58vh] max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
