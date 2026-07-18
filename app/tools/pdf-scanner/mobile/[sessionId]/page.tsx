@@ -426,6 +426,10 @@ export default function MobilePage() {
       setDraftImage(null);
       setActiveCornerIndex(null);
       setActiveImageId(null);
+
+      window.setTimeout(() => {
+        cameraInputRef.current?.click();
+      }, 180);
       return;
     }
 
@@ -454,7 +458,7 @@ export default function MobilePage() {
   const previewImage = draftImage ?? activeImage;
 
   return (
-  <div className="h-screen flex flex-col bg-slate-950 text-white overflow-hidden">
+  <div className="min-h-screen flex flex-col bg-slate-950 text-white overflow-x-hidden">
     {/* STATUS CENTER */}
     {!previewImage && (
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
@@ -514,7 +518,7 @@ export default function MobilePage() {
     {/* IMAGE EDITOR MODE */}
     {previewImage && (
 
-      <div className="relative h-full flex flex-col">
+      <div className="relative flex min-h-0 flex-1 flex-col">
 
 
         {/* Top floating buttons */}
@@ -548,12 +552,12 @@ export default function MobilePage() {
 
         {/* IMAGE AREA */}
 
-        <div className="relative flex-1 flex items-center justify-center overflow-hidden bg-slate-900 p-3">
+        <div className="relative flex-1 min-h-0 overflow-auto bg-slate-900 p-3">
 
 
           <div
             ref={previewContainerRef}
-            className="relative flex h-full w-full items-center justify-center overflow-hidden"
+            className="relative flex min-h-[220px] w-full items-center justify-center"
             onPointerMove={handlePreviewPointerMove}
             onPointerUp={handlePreviewPointerUp}
             onPointerLeave={handlePreviewPointerUp}
@@ -564,7 +568,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[70vh] max-w-full object-contain rounded-xl"
+              className="max-h-[60vh] max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
@@ -633,7 +637,7 @@ export default function MobilePage() {
 
         {/* BOTTOM ACTIONS */}
 
-        <div className="relative z-30 bg-slate-950 p-3">
+        <div className="sticky bottom-0 z-30 border-t border-white/10 bg-slate-950 p-3">
 
           <div className="grid grid-cols-4 gap-2">
 
