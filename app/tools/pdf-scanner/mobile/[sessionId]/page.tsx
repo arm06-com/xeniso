@@ -579,7 +579,7 @@ export default function MobilePage() {
         </div>
 
         {/* IMAGE AREA */}
-        <div className="flex-1 min-h-[55vh] overflow-hidden bg-slate-900 p-2">
+        <div className="relative flex-1 min-h-[55vh] overflow-hidden bg-slate-900 p-2">
 
 
           <div
@@ -655,7 +655,7 @@ export default function MobilePage() {
 
         {/* BOTTOM ACTIONS */}
 
-        <div className="z-30 border-t border-white/10 bg-slate-950 p-2">
+        <div className=" absolute bottom-0 left-0 right-0 z-30 border-t border-white/10 bg-slate-950 p-2">
 
           <div className="grid grid-cols-4 gap-2">
 
