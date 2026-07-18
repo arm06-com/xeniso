@@ -553,12 +553,8 @@ export default function MobilePage() {
     {previewImage && (
 
       <div className="relative flex max-h-90vh flex-1 flex-col">
-
-
         {/* Top floating buttons */}
         <div className="pointer-events-none my-2 z-30 flex justify-center gap-4">
-
-
           <button
             type="button"
             onClick={handleGalleryClick}
@@ -577,21 +573,15 @@ export default function MobilePage() {
           >
             <Camera className="h-5 w-5" />
           </button>
-
-
         </div>
 
-
-
-
         {/* IMAGE AREA */}
-
-        <div className="flex-1 max-h-65vh overflow-hidden bg-slate-900 p-2">
+        <div className="flex-1 min-h-400 overflow-hidden bg-slate-900 p-2">
 
 
           <div
             ref={previewContainerRef}
-            className="relative flex min-h-55 w-full items-center justify-center"
+            className="relative flex min-h-380 w-full items-center justify-center"
             onPointerMove={handlePreviewPointerMove}
             onPointerUp={handlePreviewPointerUp}
             onPointerLeave={handlePreviewPointerUp}
@@ -602,7 +592,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[60vh] max-w-full object-contain rounded-xl"
+              className="min-h-350 max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
