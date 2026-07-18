@@ -552,9 +552,9 @@ export default function MobilePage() {
     {/* IMAGE EDITOR MODE */}
     {previewImage && (
 
-      <div className="relative flex max-h-80vh flex-1 flex-col">
+      <div className="flex h-full min-h-0 flex-col">
         {/* Top floating buttons */}
-        <div className="pointer-events-none my-2 z-30 flex justify-center gap-4">
+        <div className="shrink-0 py-2 flex justify-center gap-4">
 
 
           <button
@@ -579,7 +579,7 @@ export default function MobilePage() {
         </div>
 
         {/* IMAGE AREA */}
-        <div className="relative flex-1 min-h-[55vh] overflow-hidden bg-slate-900 p-2">
+        <div className="relative flex-1 min-h-0 overflow-hidden bg-slate-900 p-2">
 
 
           <div
@@ -595,7 +595,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[55vh] max-w-full object-contain rounded-xl"
+              className="max-h-full max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
@@ -655,7 +655,7 @@ export default function MobilePage() {
 
         {/* BOTTOM ACTIONS */}
 
-        <div className=" absolute bottom-0 left-0 right-0 z-30 border-t border-white/10 bg-slate-950 p-2">
+        <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
 
           <div className="grid grid-cols-4 gap-2">
 
@@ -772,8 +772,6 @@ export default function MobilePage() {
       </div>
 
     )}
-
-
   </div>
 );
 }
