@@ -109,6 +109,7 @@ export default function MobilePage() {
   const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
+  const [showCornerPreview, setShowCornerPreview] = useState(false);
   const queuedImagesRef = useRef<QueuedImage[]>([]);
 
   useEffect(() => {
@@ -301,6 +302,7 @@ export default function MobilePage() {
     });
 
     setActiveImageId(nextId);
+    setShowCornerPreview(true);
   };
 
   const handleImageCapture = async (event: { target: HTMLInputElement }) => {
@@ -332,8 +334,10 @@ export default function MobilePage() {
 
       if (nextImages.length === 0) {
         setActiveImageId(null);
+        setShowCornerPreview(false);
       } else if (activeImageId === imageId) {
         setActiveImageId(nextImages[0].id);
+        setShowCornerPreview(true);
       }
 
       return nextImages;
@@ -368,6 +372,7 @@ export default function MobilePage() {
       );
     });
 
+    setShowCornerPreview(false);
     setStatus("Page area updated. The cropped version is ready to review.");
   };
 
@@ -462,7 +467,7 @@ export default function MobilePage() {
           />
         </div>
         {/* Active image preview and corner adjustment modal */}
-        {activeImage && activeImageId === activeImage.id && (
+        {showCornerPreview && activeImage && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
             <div className="w-full max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl">
               <h3 className="mb-4 text-center text-lg font-semibold">Adjust page edges</h3>
@@ -526,7 +531,7 @@ export default function MobilePage() {
                 </button>
                 <button
                   onClick={() => {
-                    setActiveImageId(null);
+                    setShowCornerPreview(false);
                     handleDelete(activeImageId!);
                   }}
                   className="rounded-lg border border-rose-300 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
@@ -577,7 +582,10 @@ export default function MobilePage() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveImageId(item.id)}
+                  onClick={() => {
+                    setActiveImageId(item.id);
+                    setShowCornerPreview(true);
+                  }}
                   className={`flex min-w-[72px] flex-col items-center rounded-xl border p-2 text-center transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-white/10 bg-slate-950/60"}`}
                 >
                   <img src={item.previewUrl} alt={`Captured page ${index + 1}`} className="h-14 w-14 rounded-md object-cover" />
