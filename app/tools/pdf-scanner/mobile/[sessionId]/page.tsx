@@ -552,7 +552,7 @@ export default function MobilePage() {
     {/* IMAGE EDITOR MODE */}
     {previewImage && (
 
-      <div className="relative flex max-h-100vh flex-1 flex-col">
+      <div className="relative flex max-h-90vh flex-1 flex-col">
 
 
         {/* Top floating buttons */}
@@ -562,7 +562,7 @@ export default function MobilePage() {
           <button
             type="button"
             onClick={handleGalleryClick}
-            className="pointer-events-auto rounded-full bg-slate-900/80 px-5 py-3 text-white"
+            className="pointer-events-auto rounded-full bg-orange-500/80 px-5 py-3 text-white"
             aria-label="Choose from gallery"
           >
             <Images className="h-5 w-5" />
@@ -586,7 +586,7 @@ export default function MobilePage() {
 
         {/* IMAGE AREA */}
 
-        <div className="flex-1 max-h-70vh overflow-hidden bg-slate-900 p-2">
+        <div className="flex-1 max-h-65vh overflow-hidden bg-slate-900 p-2">
 
 
           <div
@@ -602,7 +602,7 @@ export default function MobilePage() {
 
             <img
               src={previewImage.previewUrl}
-              className="max-h-[68vh] max-w-full object-contain rounded-xl"
+              className="max-h-[60vh] max-w-full object-contain rounded-xl"
               style={{
                 transform:`rotate(${previewImage.rotation}deg)`
               }}
