@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, type MouseEvent } from "react";
+import { useEffect, useState, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import ToolLayout from "@/components/ToolLayout";
 import AdBanner from "@/components/AdBanner";
 import { PDFDocument } from "pdf-lib";
@@ -14,6 +14,18 @@ type ScannerPage = {
 
 const A4_WIDTH = 595.28;
 const A4_HEIGHT = 841.89;
+
+type Point = {
+  x: number;
+  y: number;
+};
+
+const createDefaultManualCorners = (): Point[] => [
+  { x: 0.08, y: 0.08 },
+  { x: 0.92, y: 0.08 },
+  { x: 0.92, y: 0.92 },
+  { x: 0.08, y: 0.92 },
+];
 
 function dataUrlToUint8Array(dataUrl: string) {
   const base64 = dataUrl.split(",")[1] ?? "";
@@ -137,7 +149,11 @@ export default function PdfScannerPage() {
   const [sessionId] = useState(() => (typeof window !== "undefined" ? crypto.randomUUID() : ""));
   const [images, setImages] = useState<ScannerPage[]>([]);
   const [qrCode, setQrCode] = useState("");
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [isMobileDevice] = useState(() =>
+    typeof window !== "undefined"
+      ? /Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent)
+      : false
+  );
   const [connected, setConnected] = useState(false);
   const [isCreatingPdf, setIsCreatingPdf] = useState(false);
   const [croppingId, setCroppingId] = useState<string | null>(null);
@@ -145,17 +161,11 @@ export default function PdfScannerPage() {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
-  const [selection, setSelection] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const selectingRef = useRef(false);
-  const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement | null>(null);
+  const [cropCorners, setCropCorners] = useState<Point[]>([]);
+  const [activeCropCornerIndex, setActiveCropCornerIndex] = useState<number | null>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
   const [draggedId, setDraggedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsMobileDevice(/Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent));
-    }
-  }, []);
 
   useEffect(() => {
     if (!sessionId || !origin) return;
@@ -340,7 +350,8 @@ export default function PdfScannerPage() {
       setImages((prev) => [...prev, { id, dataUrl, rotation: 0, zoom: 1 }]);
       setCroppingId(id);
       setCropPreviewUrl(dataUrl);
-      setSelection(null);
+      setCropCorners(createDefaultManualCorners());
+      setActiveCropCornerIndex(null);
     };
 
     reader.onerror = () => {
@@ -368,7 +379,8 @@ export default function PdfScannerPage() {
     if (!page) return;
     setCroppingId(id);
     setCropPreviewUrl(page.dataUrl);
-    setSelection(null);
+    setCropCorners(createDefaultManualCorners());
+    setActiveCropCornerIndex(null);
   };
 
   const handleDrop = (targetId: string) => {
@@ -448,39 +460,50 @@ export default function PdfScannerPage() {
     }
     setCroppingId(null);
     setCropPreviewUrl(null);
-    setSelection(null);
+    setCropCorners([]);
+    setActiveCropCornerIndex(null);
   };
 
-  const onCropMouseDown = (e: MouseEvent) => {
-    if (!imgRef.current) return;
-    const rect = imgRef.current.getBoundingClientRect();
-    const startX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-    const startY = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
-    selectionStartRef.current = { x: startX, y: startY };
-    selectingRef.current = true;
-    setSelection({ x: startX, y: startY, width: 0, height: 0 });
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+  const updateActiveCorner = (clientX: number, clientY: number) => {
+    if (activeCropCornerIndex === null || !previewContainerRef.current) {
+      return;
+    }
+
+    const rect = previewContainerRef.current.getBoundingClientRect();
+    const x = clamp((clientX - rect.left) / rect.width, 0, 1);
+    const y = clamp((clientY - rect.top) / rect.height, 0, 1);
+
+    setCropCorners((prev) => prev.map((point, index) => (index === activeCropCornerIndex ? { x, y } : point)));
   };
 
-  const onCropMouseMove = (e: MouseEvent) => {
-    if (!selectingRef.current || !imgRef.current || !selectionStartRef.current) return;
-    const rect = imgRef.current.getBoundingClientRect();
-    const curX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-    const curY = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
-    const sx = Math.min(selectionStartRef.current.x, curX);
-    const sy = Math.min(selectionStartRef.current.y, curY);
-    const sw = Math.abs(curX - selectionStartRef.current.x);
-    const sh = Math.abs(curY - selectionStartRef.current.y);
-    setSelection({ x: sx, y: sy, width: sw, height: sh });
+  const handleCropPointerDown = (event: ReactPointerEvent<HTMLElement>, cornerIndex: number) => {
+    event.preventDefault();
+    event.stopPropagation();
+    previewContainerRef.current?.setPointerCapture(event.pointerId);
+    setActiveCropCornerIndex(cornerIndex);
   };
 
-  const onCropMouseUp = () => {
-    selectingRef.current = false;
-    selectionStartRef.current = null;
+  const handleCropPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
+    if (activeCropCornerIndex === null) {
+      return;
+    }
+
+    event.preventDefault();
+    updateActiveCorner(event.clientX, event.clientY);
+  };
+
+  const handleCropPointerUp = () => {
+    setActiveCropCornerIndex(null);
+  };
+
+  const resetCropCorners = () => {
+    setCropCorners(createDefaultManualCorners());
   };
 
   const applyCrop = async () => {
-    if (!selection || !cropPreviewUrl || !croppingId || !imgRef.current) {
-      // nothing selected: just close
+    if (cropCorners.length !== 4 || !cropPreviewUrl || !croppingId || !imgRef.current) {
       closeCrop();
       return;
     }
@@ -493,10 +516,28 @@ export default function PdfScannerPage() {
     const scaleX = naturalW / displayW;
     const scaleY = naturalH / displayH;
 
-    const sx = Math.round(selection.x * scaleX);
-    const sy = Math.round(selection.y * scaleY);
-    const sWidth = Math.max(1, Math.round(selection.width * scaleX));
-    const sHeight = Math.max(1, Math.round(selection.height * scaleY));
+    const scaledPoints = cropCorners.map((point) => ({
+      x: Math.round(Math.max(0, Math.min(1, point.x)) * displayW * scaleX),
+      y: Math.round(Math.max(0, Math.min(1, point.y)) * displayH * scaleY),
+    }));
+
+    let minX = naturalW;
+    let minY = naturalH;
+    let maxX = 0;
+    let maxY = 0;
+
+    scaledPoints.forEach((point) => {
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x);
+      maxY = Math.max(maxY, point.y);
+    });
+
+    const padding = 12;
+    const cropX = Math.max(0, minX - padding);
+    const cropY = Math.max(0, minY - padding);
+    const cropWidth = Math.max(60, Math.min(naturalW - cropX, maxX - cropX + padding * 2));
+    const cropHeight = Math.max(60, Math.min(naturalH - cropY, maxY - cropY + padding * 2));
 
     const image = new Image();
     image.src = cropPreviewUrl;
@@ -506,15 +547,15 @@ export default function PdfScannerPage() {
     });
 
     const canvas = document.createElement("canvas");
-    canvas.width = sWidth;
-    canvas.height = sHeight;
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       closeCrop();
       return;
     }
 
-    ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
+    ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
     const croppedDataUrl = canvas.toDataURL("image/png");
 
     setImages((prev) => prev.map((item) => (item.id === croppingId ? { ...item, dataUrl: croppedDataUrl } : item)));
@@ -602,7 +643,6 @@ export default function PdfScannerPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Captured pages</h2>
-              <p className="mt-1 text-sm text-slate-600">Each scan appears here as a page you can refine before exporting.</p>
             </div>
             <button
               onClick={handleDownloadPdf}
@@ -685,37 +725,63 @@ export default function PdfScannerPage() {
       <AdBanner slot="MIDDLE-BANNER" />
 
       {croppingId && cropPreviewUrl && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-        <div className="max-w-4xl w-full rounded-2xl bg-white p-4 text-slate-900">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Crop image</h3>
-            <div className="flex gap-2">
-              <button onClick={closeCrop} className="rounded-md border px-3 py-1 text-sm">Cancel</button>
-              <button onClick={applyCrop} className="rounded-md bg-slate-900 px-3 py-1 text-sm text-white">Apply</button>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6">
+        <div className="w-full max-w-4xl rounded-2xl bg-white p-4 text-slate-900 shadow-2xl">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-lg font-semibold">Adjust page edges</h3>
+              <p className="text-sm text-slate-600">Drag each corner handle to match the page outline before applying the crop.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={resetCropCorners} className="rounded-md border border-slate-300 px-3 py-1.5 text-sm">Reset corners</button>
+              <button onClick={closeCrop} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button onClick={applyCrop} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm text-white">Apply</button>
             </div>
           </div>
 
           <div
-            className="relative flex items-center justify-center overflow-auto bg-slate-100 p-4"
-            onMouseDown={onCropMouseDown}
-            onMouseMove={onCropMouseMove}
-            onMouseUp={onCropMouseUp}
+            ref={previewContainerRef}
+            className="relative flex items-center justify-center overflow-auto rounded-xl bg-slate-100 p-3"
+            onPointerMove={handleCropPointerMove}
+            onPointerUp={handleCropPointerUp}
+            onPointerLeave={handleCropPointerUp}
+            style={{ touchAction: "none" }}
           >
-            <img ref={imgRef} src={cropPreviewUrl} alt="Crop preview" className="max-h-[70vh] w-auto" />
+            <img ref={imgRef} src={cropPreviewUrl} alt="Crop preview" className="max-h-[70vh] w-auto rounded-lg" />
 
-            {selection && (
-              <div
-                style={{
-                  position: "absolute",
-                  left: selection.x,
-                  top: selection.y,
-                  width: selection.width,
-                  height: selection.height,
-                }}
-              >
-                <div className="absolute inset-0 rounded-sm border-2 border-dashed border-sky-500 bg-sky-500/10" />
-              </div>
-            )}
+            <svg className="pointer-events-none absolute inset-0 h-full w-full">
+              <polygon
+                points={cropCorners.map((point) => `${point.x * 100}% ${point.y * 100}%`).join(" ")}
+                className="fill-sky-500/15"
+                style={{ stroke: "rgba(14, 165, 233, 0.95)", strokeWidth: 3, strokeDasharray: "12 8" }}
+              />
+              {cropCorners.map((point, index) => {
+                const nextPoint = cropCorners[(index + 1) % cropCorners.length];
+                return (
+                  <line
+                    key={`edge-${index}`}
+                    x1={`${point.x * 100}%`}
+                    y1={`${point.y * 100}%`}
+                    x2={`${nextPoint.x * 100}%`}
+                    y2={`${nextPoint.y * 100}%`}
+                    stroke="rgba(14, 165, 233, 0.95)"
+                    strokeWidth={2}
+                    strokeDasharray="8 6"
+                  />
+                );
+              })}
+            </svg>
+
+            {cropCorners.map((point, index) => (
+              <button
+                key={`crop-handle-${index}`}
+                type="button"
+                aria-label={`Move ${["top-left", "top-right", "bottom-right", "bottom-left"][index]} corner`}
+                className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-sky-500 shadow"
+                style={{ left: `${point.x * 100}%`, top: `${point.y * 100}%` }}
+                onPointerDown={(event) => handleCropPointerDown(event, index)}
+              />
+            ))}
           </div>
         </div>
       </div>

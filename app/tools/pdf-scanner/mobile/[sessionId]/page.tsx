@@ -461,8 +461,8 @@ export default function MobilePage() {
             onChange={handleImageCapture}
           />
         </div>
-
-        {activeImage && (
+        {/* Active image preview and corner adjustment modal */}
+        {activeImage && activeImageId === activeImage.id && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
             <div className="w-full max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl">
               <h3 className="mb-4 text-center text-lg font-semibold">Adjust page edges</h3>
@@ -525,7 +525,10 @@ export default function MobilePage() {
                   Reset corners
                 </button>
                 <button
-                  onClick={() => handleDelete(activeImageId!)}
+                  onClick={() => {
+                    setActiveImageId(null);
+                    handleDelete(activeImageId!);
+                  }}
                   className="rounded-lg border border-rose-300 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
                 >
                   Delete
