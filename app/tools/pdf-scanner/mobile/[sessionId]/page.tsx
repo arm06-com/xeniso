@@ -414,313 +414,299 @@ export default function MobilePage() {
   const previewImage = draftImage ?? activeImage;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white">
+  <div className="h-screen flex flex-col bg-slate-950 text-white overflow-hidden">
+    {/* STATUS CENTER */}
+    {!previewImage && (
+      <div className="flex-1 flex flex-col items-center justify-center gap-8">
 
-      {/* Header */}
-      <div className="border-b border-white/10 bg-slate-900 px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="rounded-full border border-green-400/30 bg-green-500/10 px-6 py-3 text-green-300">
+          ● {status}
+        </div>
+        {/* Capture Buttons */}
+        <div className="flex gap-6">
 
-          <p className="text-sm text-slate-300 truncate">
-            {status}
-          </p>
+          {/* Gallery */}
+          <button
+            onClick={handleGalleryClick}
+            className="h-20 w-20 rounded-full bg-slate-800 border border-white/20 text-3xl"
+          >
+            🖼️
+          </button>
 
-          <div className="flex gap-2">
 
-            {/* Gallery */}
-            <button
-              type="button"
-              onClick={handleGalleryClick}
-              className="rounded-full border border-white/20 bg-slate-800 p-2"
-            >
-              📁
-            </button>
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageCapture}
+          />
 
-            <input
-              ref={galleryInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageCapture}
+
+          {/* Camera */}
+          <button
+            onClick={handleCameraClick}
+            className="h-20 w-20 rounded-full bg-sky-600 text-3xl shadow-lg"
+          >
+            📷
+          </button>
+
+
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleImageCapture}
+          />
+
+        </div>
+
+
+        <p className="text-sm text-slate-400">
+          Capture document or choose from gallery
+        </p>
+
+      </div>
+    )}
+
+
+
+
+    {/* IMAGE EDITOR MODE */}
+    {previewImage && (
+
+      <div className="h-full flex flex-col">
+
+
+        {/* Top floating buttons */}
+        <div className="absolute top-4 left-0 right-0 z-20 flex justify-center gap-4">
+
+
+          <button
+            onClick={handleGalleryClick}
+            className="rounded-full bg-slate-900/80 px-5 py-3"
+          >
+            🖼️
+          </button>
+
+
+          <button
+            onClick={handleCameraClick}
+            className="rounded-full bg-sky-600 px-5 py-3"
+          >
+            📷
+          </button>
+
+
+        </div>
+
+
+
+
+        {/* IMAGE AREA */}
+
+        <div className="flex-1 flex items-center justify-center bg-slate-900 p-3">
+
+
+          <div
+            ref={previewContainerRef}
+            className="relative w-full h-full flex items-center justify-center"
+            onPointerMove={handlePreviewPointerMove}
+            onPointerUp={handlePreviewPointerUp}
+            onPointerLeave={handlePreviewPointerUp}
+            style={{touchAction:"none"}}
+          >
+
+
+            <img
+              src={previewImage.previewUrl}
+              className="max-h-[70vh] max-w-full object-contain rounded-xl"
+              style={{
+                transform:`rotate(${previewImage.rotation}deg)`
+              }}
             />
 
-            {/* Camera */}
-            <button
-              type="button"
-              onClick={handleCameraClick}
-              className="rounded-full bg-sky-600 p-2 text-white"
-            >
-              📷
-            </button>
+            <svg className="absolute inset-0 w-full h-full pointer-events-none">
 
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={handleImageCapture}
-            />
+
+              <polygon
+                points={
+                  previewImage.manualCorners
+                  .map(
+                    p=>`${p.x*100}% ${p.y*100}%`
+                  )
+                  .join(" ")
+                }
+                fill="rgba(56,189,248,.15)"
+                stroke="#38bdf8"
+                strokeWidth="3"
+                strokeDasharray="10 6"
+              />
+
+            </svg>
+
+            {previewImage.manualCorners.map((point,index)=>(
+
+              <button
+                key={index}
+                onPointerDown={(e)=>
+                  handlePreviewPointerDown(e,index)
+                }
+                className="
+                absolute h-6 w-6
+                rounded-full
+                bg-sky-500
+                border-2 border-white
+                -translate-x-1/2
+                -translate-y-1/2
+                "
+                style={{
+                  left:`${point.x*100}%`,
+                  top:`${point.y*100}%`
+                }}
+              />
+
+
+            ))}
+
 
           </div>
 
+
         </div>
-      </div>
 
-      {/* Preview Area */}
-      <div className="flex-1 flex flex-col">
 
-        {previewImage ? (
+        {/* BOTTOM ACTIONS */}
 
-          <div className="flex flex-col flex-1">
+        <div className="bg-slate-950 p-3">
 
-            {/* Image */}
-            <div className="flex-1 bg-slate-800 flex items-center justify-center p-3 overflow-auto">
+          <div className="grid grid-cols-4 gap-2">
+
+
+            <button
+              onClick={handleRotatePreview}
+              className="rounded-xl bg-slate-700 py-3"
+            >
+              🔄
+              <div className="text-xs">
+                Rotate
+              </div>
+            </button>
+
+
+
+            <button
+              onClick={handleRetryCapture}
+              className="rounded-xl bg-orange-600 py-3"
+            >
+              📷
+              <div className="text-xs">
+                Retake
+              </div>
+            </button>
+
+
+
+            <button
+              onClick={()=>{
+                if(draftImage?.previewUrl)
+                URL.revokeObjectURL(
+                  draftImage.previewUrl
+                );
+
+                setDraftImage(null);
+              }}
+              className="rounded-xl bg-red-600 py-3"
+            >
+              🗑
+              <div className="text-xs">
+                Delete
+              </div>
+            </button>
+
+
+
+            <button
+              onClick={handleSubmitAll}
+              className="rounded-xl bg-green-600 py-3"
+            >
+              ⬆
+              <div className="text-xs">
+                Submit
+              </div>
+            </button>
+
+
+          </div>
+
+
+        </div>
+
+
+
+
+
+
+        {/* THUMBNAILS */}
+
+        {queuedImages.length > 0 && (
+
+          <div className="bg-slate-900 px-3 py-2">
+
+            <div className="flex gap-2">
+
+
+            {queuedImages.map(item=>(
 
               <div
-                ref={previewContainerRef}
-                className="relative w-full"
-                onPointerMove={handlePreviewPointerMove}
-                onPointerUp={handlePreviewPointerUp}
-                onPointerLeave={handlePreviewPointerUp}
-                style={{ touchAction: "none" }}
+                key={item.id}
+                className="relative"
               >
 
                 <img
-                  src={previewImage.previewUrl}
-                  alt="Preview"
-                  className="w-full max-h-[65vh] object-contain rounded-lg"
-                  style={{
-                    transform: `rotate(${previewImage.rotation}deg)`
-                  }}
+                  src={item.previewUrl}
+                  className="h-14 w-14 rounded-lg object-cover border"
                 />
 
-                <svg className="pointer-events-none absolute inset-0 w-full h-full">
 
-                  <polygon
-                    points={previewImage.manualCorners
-                      .map(
-                        (point) =>
-                          `${point.x * 100}% ${point.y * 100}%`
-                      )
-                      .join(" ")}
-                    className="fill-sky-500/15"
-                    style={{
-                      stroke: "#38bdf8",
-                      strokeWidth: 3,
-                      strokeDasharray: "10 6",
-                    }}
-                  />
+                <button
+                  onClick={()=>
+                    handleDelete(item.id)
+                  }
+                  className="
+                  absolute
+                  -top-2
+                  -right-2
+                  bg-red-600
+                  rounded-full
+                  h-5
+                  w-5
+                  "
+                >
+                  ×
+                </button>
 
-                  {previewImage.manualCorners.map((point, index) => {
-
-                    const next =
-                      previewImage.manualCorners[
-                        (index + 1) %
-                          previewImage.manualCorners.length
-                      ];
-
-                    return (
-                      <line
-                        key={index}
-                        x1={`${point.x * 100}%`}
-                        y1={`${point.y * 100}%`}
-                        x2={`${next.x * 100}%`}
-                        y2={`${next.y * 100}%`}
-                        stroke="#38bdf8"
-                        strokeWidth={2}
-                        strokeDasharray="8 5"
-                      />
-                    );
-                  })}
-                </svg>
-
-                {previewImage.manualCorners.map((point, index) => (
-
-                  <button
-                    key={index}
-                    type="button"
-                    onPointerDown={(e) =>
-                      handlePreviewPointerDown(e, index)
-                    }
-                    className="absolute h-5 w-5 rounded-full bg-sky-500 border-2 border-white -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: `${point.x * 100}%`,
-                      top: `${point.y * 100}%`,
-                    }}
-                  />
-
-                ))}
 
               </div>
+
+
+            ))}
+
 
             </div>
-
-            {/* Buttons */}
-            <div className="border-t border-white/10 bg-slate-900 p-3">
-
-              <div className="grid grid-cols-4 gap-2">
-
-                <button
-                  onClick={handleRotatePreview}
-                  className="rounded-lg bg-slate-700 py-2"
-                >
-                  ↻
-                  <div className="text-xs">Rotate</div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (draftImage?.previewUrl) {
-                      URL.revokeObjectURL(draftImage.previewUrl);
-                    }
-
-                    setDraftImage(null);
-
-                    window.setTimeout(() => {
-                      cameraInputRef.current?.click();
-                    }, 200);
-                  }}
-                  className="rounded-lg bg-amber-600 py-2"
-                >
-                  📷
-                  <div className="text-xs">Retake</div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (draftImage?.previewUrl) {
-                      URL.revokeObjectURL(draftImage.previewUrl);
-                    }
-
-                    setDraftImage(null);
-
-                    setStatus("Capture cancelled.");
-
-                    window.setTimeout(() => {
-                      cameraInputRef.current?.click();
-                    }, 200);
-                  }}
-                  className="rounded-lg bg-red-600 py-2"
-                >
-                  🗑
-                  <div className="text-xs">Delete</div>
-                </button>
-
-                <button
-                  onClick={async () => {
-                    if (!previewImage) return;
-
-                    const cropped = await createCroppedFile(
-                      previewImage.file,
-                      previewImage.manualCorners,
-                      previewImage.rotation
-                    );
-
-                    const compressed = await imageCompression(cropped, {
-                      maxSizeMB: 0.5,
-                      maxWidthOrHeight: 1600,
-                      useWebWorker: true,
-                    });
-
-                    if (isStandaloneMode) {
-                      setQueuedImages([
-                        {
-                          id: crypto.randomUUID(),
-                          file: compressed,
-                          previewUrl: URL.createObjectURL(compressed),
-                          manualCorners: createDefaultManualCorners(),
-                          rotation: 0,
-                        },
-                      ]);
-
-                      setActiveImageId(null);
-
-                      if (draftImage?.previewUrl) {
-                        URL.revokeObjectURL(draftImage.previewUrl);
-                      }
-
-                      setDraftImage(null);
-
-                      setStatus("Page saved.");
-                    } else {
-                      await uploadImage(compressed);
-                    }
-                  }}
-                  className="rounded-lg bg-green-600 py-2"
-                >
-                  ⬆
-                  <div className="text-xs">Submit</div>
-                </button>
-
-              </div>
-
-            </div>
-
-            {/* Thumbnails */}
-            {queuedImages.length > 0 && (
-
-              <div className="border-t border-white/10 bg-slate-900 px-2 py-2">
-
-                <div className="flex gap-2 overflow-x-auto">
-
-                  {queuedImages.map((item) => (
-
-                    <div
-                      key={item.id}
-                      className="relative flex-shrink-0"
-                    >
-
-                      <img
-                        src={item.previewUrl}
-                        onClick={() =>
-                          setActiveImageId(item.id)
-                        }
-                        className={`h-16 w-16 rounded-lg object-cover border-2 ${
-                          activeImageId === item.id
-                            ? "border-sky-500"
-                            : "border-gray-700"
-                        }`}
-                      />
-
-                      <button
-                        onClick={() =>
-                          handleDelete(item.id)
-                        }
-                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-600 text-xs"
-                      >
-                        ×
-                      </button>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-              </div>
-
-            )}
-
-          </div>
-
-        ) : (
-
-          <div className="flex-1 flex items-center justify-center">
-
-            <button
-              type="button"
-              onClick={handleCameraClick}
-              className="rounded-full bg-sky-600 px-8 py-6 text-xl font-semibold"
-            >
-              📷 Open Camera
-            </button>
 
           </div>
 
         )}
 
+
       </div>
 
-    </div>
-  );
+    )}
+
+
+  </div>
+);
 }
