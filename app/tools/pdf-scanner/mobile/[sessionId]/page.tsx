@@ -14,6 +14,7 @@ type QueuedImage = {
   file: File;
   previewUrl: string;
   manualCorners: Point[];
+  rotation: number;
 };
 
 const createDefaultManualCorners = (): Point[] => [
@@ -41,12 +42,48 @@ const createImageFromFile = (file: File) =>
     image.src = objectUrl;
   });
 
-const createCroppedFile = async (file: File, points: Point[]) => {
-  if (points.length !== 4) {
+const rotateImageFile = async (file: File, rotation: number) => {
+  if (rotation % 360 === 0) {
     return file;
   }
 
   const image = await createImageFromFile(file);
+  const width = image.naturalWidth || image.width || 1;
+  const height = image.naturalHeight || image.height || 1;
+  const isLandscape = rotation % 180 !== 0;
+  const canvas = document.createElement("canvas");
+  canvas.width = isLandscape ? height : width;
+  canvas.height = isLandscape ? width : height;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return file;
+  }
+
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate((rotation * Math.PI) / 180);
+  context.drawImage(image, -width / 2, -height / 2, width, height);
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/jpeg", 0.95);
+  });
+
+  if (!blob) {
+    return file;
+  }
+
+  return new File([blob], file.name.replace(/\.(jpe?g|png|heic|heif)$/i, ".jpg"), {
+    type: "image/jpeg",
+  });
+};
+
+const createCroppedFile = async (file: File, points: Point[], rotation = 0) => {
+  if (points.length !== 4) {
+    return file;
+  }
+
+  const rotatedFile = await rotateImageFile(file, rotation);
+  const image = await createImageFromFile(rotatedFile);
   const width = image.naturalWidth || image.width || 1;
   const height = image.naturalHeight || image.height || 1;
 
@@ -110,6 +147,7 @@ export default function MobilePage() {
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
   const [showCornerPreview, setShowCornerPreview] = useState(false);
+  const [draftImage, setDraftImage] = useState<QueuedImage | null>(null);
   const queuedImagesRef = useRef<QueuedImage[]>([]);
 
   useEffect(() => {
@@ -153,13 +191,31 @@ export default function MobilePage() {
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
   const updateActiveCorner = (clientX: number, clientY: number) => {
-    if (activeCornerIndex === null || !activeImageId || !previewContainerRef.current) {
+    if (activeCornerIndex === null || !previewContainerRef.current) {
       return;
     }
 
     const rect = previewContainerRef.current.getBoundingClientRect();
     const x = clamp((clientX - rect.left) / rect.width, 0, 1);
     const y = clamp((clientY - rect.top) / rect.height, 0, 1);
+
+    if (draftImage) {
+      setDraftImage((prev) =>
+        prev
+          ? {
+              ...prev,
+              manualCorners: prev.manualCorners.map((point, index) =>
+                index === activeCornerIndex ? { x, y } : point
+              ),
+            }
+          : prev
+      );
+      return;
+    }
+
+    if (!activeImageId) {
+      return;
+    }
 
     setQueuedImages((prev) =>
       prev.map((item) => {
@@ -183,7 +239,7 @@ export default function MobilePage() {
       setStatus("Preparing page...");
 
       if (isStandaloneMode) {
-        const preparedFile = await createCroppedFile(file, points);
+        const preparedFile = await createCroppedFile(file, points, 0);
         const compressed = await imageCompression(preparedFile, {
           maxSizeMB: 0.5,
           maxWidthOrHeight: 1600,
@@ -194,7 +250,7 @@ export default function MobilePage() {
         const nextId = crypto.randomUUID();
 
         setQueuedImages((prev) => {
-          return [...prev, { id: nextId, file: compressed, previewUrl, manualCorners: createDefaultManualCorners() }];
+          return [...prev, { id: nextId, file: compressed, previewUrl, manualCorners: createDefaultManualCorners(), rotation: 0 }];
         });
 
         setActiveImageId(nextId);
@@ -284,6 +340,11 @@ export default function MobilePage() {
   };
 
   const resetManualCorners = () => {
+    if (draftImage) {
+      setDraftImage((prev) => (prev ? { ...prev, manualCorners: createDefaultManualCorners() } : prev));
+      return;
+    }
+
     if (!activeImageId) {
       return;
     }
@@ -293,15 +354,24 @@ export default function MobilePage() {
     );
   };
 
-  const addOrReplaceQueuedImage = (file: File) => {
+  const handleRotatePreview = () => {
+    if (!draftImage) {
+      return;
+    }
+
+    setDraftImage((prev) => (prev ? { ...prev, rotation: (prev.rotation + 90) % 360 } : prev));
+  };
+
+  const prepareDraftImage = async (file: File) => {
     const previewUrl = URL.createObjectURL(file);
-    const nextId = crypto.randomUUID();
 
-    setQueuedImages((prev) => {
-      return [...prev, { id: nextId, file, previewUrl, manualCorners: createDefaultManualCorners() }];
+    setDraftImage({
+      id: crypto.randomUUID(),
+      file,
+      previewUrl,
+      manualCorners: createDefaultManualCorners(),
+      rotation: 0,
     });
-
-    setActiveImageId(nextId);
     setShowCornerPreview(true);
   };
 
@@ -310,7 +380,11 @@ export default function MobilePage() {
 
     if (!file) return;
 
-    addOrReplaceQueuedImage(file);
+    if (draftImage?.previewUrl) {
+      URL.revokeObjectURL(draftImage.previewUrl);
+    }
+
+    await prepareDraftImage(file);
     event.target.value = "";
   };
 
@@ -344,36 +418,54 @@ export default function MobilePage() {
     });
   };
 
-  const applyActiveCrop = async () => {
-    if (!activeImageId) {
+  const handleRetryCapture = () => {
+    if (draftImage?.previewUrl) {
+      URL.revokeObjectURL(draftImage.previewUrl);
+    }
+
+    setDraftImage(null);
+    setShowCornerPreview(false);
+    setActiveCornerIndex(null);
+
+    window.setTimeout(() => {
+      cameraInputRef.current?.click();
+    }, 120);
+  };
+
+  const handleConfirmCapture = async () => {
+    if (!draftImage) {
       return;
     }
 
-    const currentImage = queuedImages.find((item) => item.id === activeImageId);
-
-    if (!currentImage) {
-      return;
-    }
-
-    const croppedFile = await createCroppedFile(currentImage.file, currentImage.manualCorners);
-    const previewUrl = URL.createObjectURL(croppedFile);
-
-    setQueuedImages((prev) => {
-      const previousItem = prev.find((item) => item.id === activeImageId);
-
-      if (previousItem?.previewUrl) {
-        URL.revokeObjectURL(previousItem.previewUrl);
-      }
-
-      return prev.map((item) =>
-        item.id === activeImageId
-          ? { ...item, file: croppedFile, previewUrl, manualCorners: createDefaultManualCorners() }
-          : item
-      );
+    const croppedFile = await createCroppedFile(draftImage.file, draftImage.manualCorners, draftImage.rotation);
+    const compressed = await imageCompression(croppedFile, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 1600,
+      useWebWorker: true,
     });
 
+    const previewUrl = URL.createObjectURL(compressed);
+    const nextId = crypto.randomUUID();
+
+    setQueuedImages((prev) => [
+      ...prev,
+      {
+        id: nextId,
+        file: compressed,
+        previewUrl,
+        manualCorners: createDefaultManualCorners(),
+        rotation: draftImage.rotation,
+      },
+    ]);
+
+    if (draftImage.previewUrl) {
+      URL.revokeObjectURL(draftImage.previewUrl);
+    }
+
+    setActiveImageId(nextId);
+    setDraftImage(null);
     setShowCornerPreview(false);
-    setStatus("Page area updated. The cropped version is ready to review.");
+    setStatus("Page captured. The thumbnail is ready in your gallery.");
   };
 
   const handleSubmitAll = async () => {
@@ -401,6 +493,7 @@ export default function MobilePage() {
   };
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
+  const previewImage = draftImage ?? activeImage;
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
@@ -467,7 +560,7 @@ export default function MobilePage() {
           />
         </div>
         {/* Active image preview and corner adjustment modal */}
-        {showCornerPreview && activeImage && (
+        {showCornerPreview && previewImage && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
             <div className="w-full max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl">
               <h3 className="mb-4 text-center text-lg font-semibold">Adjust page edges</h3>
@@ -483,20 +576,21 @@ export default function MobilePage() {
                 style={{ touchAction: "none" }}
               >
                 <img
-                  src={activeImage.previewUrl}
+                  src={previewImage.previewUrl}
                   alt="Preview"
                   className="max-h-[60vh] w-full object-contain rounded-lg"
+                  style={{ transform: `rotate(${previewImage.rotation}deg)` }}
                 />
                 <svg className="pointer-events-none absolute inset-0 h-full w-full">
                   <polygon
-                    points={activeImage.manualCorners
+                    points={previewImage.manualCorners
                       .map((point) => `${point.x * 100}% ${point.y * 100}%`)
                       .join(" ")}
                     className="fill-sky-500/15"
                     style={{ stroke: "rgba(56, 189, 248, 0.9)", strokeWidth: 3, strokeDasharray: "12 8" }}
                   />
-                  {activeImage.manualCorners.map((point, index) => {
-                    const nextPoint = activeImage.manualCorners[(index + 1) % activeImage.manualCorners.length];
+                  {previewImage.manualCorners.map((point, index) => {
+                    const nextPoint = previewImage.manualCorners[(index + 1) % previewImage.manualCorners.length];
                     return (
                       <line
                         key={`edge-${index}`}
@@ -511,7 +605,7 @@ export default function MobilePage() {
                     );
                   })}
                 </svg>
-                {activeImage.manualCorners.map((point, index) => (
+                {previewImage.manualCorners.map((point, index) => (
                   <button
                     key={`${index}-${point.x.toFixed(3)}-${point.y.toFixed(3)}`}
                     type="button"
@@ -522,30 +616,26 @@ export default function MobilePage() {
                   />
                 ))}
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <button
-                  onClick={resetManualCorners}
-                  className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-100"
+                  type="button"
+                  onClick={handleRotatePreview}
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-slate-100 text-xl text-slate-700 transition hover:bg-slate-200"
+                  aria-label="Rotate image"
                 >
-                  Reset corners
+                  ↻
                 </button>
                 <button
-                  onClick={() => {
-                    setShowCornerPreview(false);
-                    handleDelete(activeImageId!);
-                  }}
+                  onClick={handleRetryCapture}
                   className="rounded-lg border border-rose-300 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
                 >
-                  Delete
+                  Retry
                 </button>
                 <button
-                  onClick={async () => {
-                    await applyActiveCrop();
-                    setActiveImageId(null);
-                  }}
+                  onClick={handleConfirmCapture}
                   className="flex-1 rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
                 >
-                  Done
+                  Ok
                 </button>
               </div>
             </div>
@@ -577,7 +667,7 @@ export default function MobilePage() {
           {queuedImages.length === 0 ? (
             <p className="text-sm text-slate-400">No page captured yet. Use the camera button to begin.</p>
           ) : (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">
               {queuedImages.map((item, index) => (
                 <button
                   key={item.id}
@@ -586,7 +676,7 @@ export default function MobilePage() {
                     setActiveImageId(item.id);
                     setShowCornerPreview(true);
                   }}
-                  className={`flex min-w-[72px] flex-col items-center rounded-xl border p-2 text-center transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-white/10 bg-slate-950/60"}`}
+                  className={`flex min-w-[72px] snap-start flex-col items-center rounded-xl border p-2 text-center transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-white/10 bg-slate-950/60"}`}
                 >
                   <img src={item.previewUrl} alt={`Captured page ${index + 1}`} className="h-14 w-14 rounded-md object-cover" />
                   <span className="mt-1 text-[11px] font-medium text-slate-200">Page {index + 1}</span>
