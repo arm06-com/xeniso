@@ -410,6 +410,45 @@ export default function MobilePage() {
     }, 120);
   };
 
+  const handleSubmitAll = async () => {
+    if (draftImage) {
+      const uploaded = await uploadImage(draftImage.file, draftImage.manualCorners);
+
+      if (!uploaded) {
+        return;
+      }
+
+      if (draftImage.previewUrl) {
+        URL.revokeObjectURL(draftImage.previewUrl);
+      }
+
+      setDraftImage(null);
+      setActiveCornerIndex(null);
+      setActiveImageId(null);
+      return;
+    }
+
+    if (queuedImages.length === 0) {
+      return;
+    }
+
+    if (isStandaloneMode) {
+      setStatus("Captured pages are ready locally. You can review them below or remove them when you are done.");
+      return;
+    }
+
+    for (const item of queuedImages) {
+      const uploaded = await uploadImage(item.file, item.manualCorners);
+
+      if (!uploaded) {
+        return;
+      }
+    }
+
+    setQueuedImages([]);
+    setActiveImageId(null);
+  };
+
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
   const previewImage = draftImage ?? activeImage;
 
@@ -441,8 +480,6 @@ export default function MobilePage() {
             className="hidden"
             onChange={handleImageCapture}
           />
-
-
           {/* Camera */}
           <button
             onClick={handleCameraClick}
@@ -470,9 +507,6 @@ export default function MobilePage() {
 
       </div>
     )}
-
-
-
 
     {/* IMAGE EDITOR MODE */}
     {previewImage && (
