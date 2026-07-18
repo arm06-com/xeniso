@@ -146,7 +146,6 @@ export default function MobilePage() {
   const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
-  const [showCornerPreview, setShowCornerPreview] = useState(false);
   const [draftImage, setDraftImage] = useState<QueuedImage | null>(null);
   const queuedImagesRef = useRef<QueuedImage[]>([]);
 
@@ -372,7 +371,6 @@ export default function MobilePage() {
       manualCorners: createDefaultManualCorners(),
       rotation: 0,
     });
-    setShowCornerPreview(true);
   };
 
   const handleImageCapture = async (event: { target: HTMLInputElement }) => {
@@ -408,10 +406,8 @@ export default function MobilePage() {
 
       if (nextImages.length === 0) {
         setActiveImageId(null);
-        setShowCornerPreview(false);
       } else if (activeImageId === imageId) {
         setActiveImageId(nextImages[0].id);
-        setShowCornerPreview(true);
       }
 
       return nextImages;
@@ -424,7 +420,6 @@ export default function MobilePage() {
     }
 
     setDraftImage(null);
-    setShowCornerPreview(false);
     setActiveCornerIndex(null);
 
     window.setTimeout(() => {
@@ -464,7 +459,6 @@ export default function MobilePage() {
 
     setActiveImageId(nextId);
     setDraftImage(null);
-    setShowCornerPreview(false);
     setStatus("Page captured. The thumbnail is ready in your gallery.");
   };
 
@@ -494,210 +488,203 @@ export default function MobilePage() {
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
   const previewImage = draftImage ?? activeImage;
+  const hasImages = queuedImages.length > 0 || draftImage;
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
-      <div className="mx-auto flex max-w-xl flex-col items-center rounded-3xl border border-white/10 bg-white/10 p-8 text-center shadow-2xl backdrop-blur">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-300">Mobile Scanner</p>
-        <h1 className="mt-3 text-3xl font-semibold">Scan documents like a pro</h1>
-        <p className="mt-3 text-base text-slate-300">
-          {isStandaloneMode
-            ? "Capture a page directly from this mobile browser, adjust the document edges, and review the image here without a QR session."
-            : "Capture a page and then drag the corner handles to match the document edges before you submit it."}
-        </p>
-
-        <div className="mt-6 w-full rounded-2xl border border-white/15 bg-slate-900/70 p-4 text-sm text-slate-200">
-          {status}
-        </div>
-
-        <div className="relative mt-6 flex min-h-96 w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70">
-          <div className="px-6 text-center">
-            <p className="text-lg font-semibold text-white">Ready for capture</p>
-            <p className="mt-2 text-sm text-slate-400">
-              {isStandaloneMode
-                ? "Tap the camera button to capture a page directly from this mobile browser. After the photo is added, drag the corner handles to match the page edges."
-                : "Tap the camera button to capture a page. After the photo is added, drag the corner handles to match the page edges."}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={handleGalleryClick}
-            className="inline-flex cursor-pointer items-center justify-center rounded-full border border-white/15 bg-slate-900/70 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            Choose From Gallary
-          </button>
-
-          <input
-            ref={galleryInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageCapture}
-          />
-
-          <button
-            type="button"
-            onClick={handleCameraClick}
-            className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 p-3 text-white transition hover:bg-white/15"
-            aria-label="Open camera"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h4l2-3h6l2 3h4v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
-            </svg>
-          </button>
-
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={handleImageCapture}
-          />
-        </div>
-        {/* Active image preview and corner adjustment modal */}
-        {showCornerPreview && previewImage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-            <div className="w-full max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl">
-              <h3 className="mb-4 text-center text-lg font-semibold">Adjust page edges</h3>
-              <p className="mb-3 text-sm text-slate-600">
-                Drag each corner handle to line up the selection with the document outline before you submit it.
-              </p>
-              <div
-                ref={previewContainerRef}
-                className="relative mb-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
-                onPointerMove={handlePreviewPointerMove}
-                onPointerUp={handlePreviewPointerUp}
-                onPointerLeave={handlePreviewPointerUp}
-                style={{ touchAction: "none" }}
-              >
-                <img
-                  src={previewImage.previewUrl}
-                  alt="Preview"
-                  className="max-h-[60vh] w-full object-contain rounded-lg"
-                  style={{ transform: `rotate(${previewImage.rotation}deg)` }}
-                />
-                <svg className="pointer-events-none absolute inset-0 h-full w-full">
-                  <polygon
-                    points={previewImage.manualCorners
-                      .map((point) => `${point.x * 100}% ${point.y * 100}%`)
-                      .join(" ")}
-                    className="fill-sky-500/15"
-                    style={{ stroke: "rgba(56, 189, 248, 0.9)", strokeWidth: 3, strokeDasharray: "12 8" }}
-                  />
-                  {previewImage.manualCorners.map((point, index) => {
-                    const nextPoint = previewImage.manualCorners[(index + 1) % previewImage.manualCorners.length];
-                    return (
-                      <line
-                        key={`edge-${index}`}
-                        x1={`${point.x * 100}%`}
-                        y1={`${point.y * 100}%`}
-                        x2={`${nextPoint.x * 100}%`}
-                        y2={`${nextPoint.y * 100}%`}
-                        stroke="rgba(56, 189, 248, 0.9)"
-                        strokeWidth={2}
-                        strokeDasharray="8 6"
-                      />
-                    );
-                  })}
-                </svg>
-                {previewImage.manualCorners.map((point, index) => (
-                  <button
-                    key={`${index}-${point.x.toFixed(3)}-${point.y.toFixed(3)}`}
-                    type="button"
-                    aria-label={`Move ${["top-left", "top-right", "bottom-right", "bottom-left"][index]} corner`}
-                    className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-sky-500 shadow"
-                    style={{ left: `${point.x * 100}%`, top: `${point.y * 100}%` }}
-                    onPointerDown={(event) => handlePreviewPointerDown(event, index)}
-                  />
-                ))}
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleRotatePreview}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-slate-100 text-xl text-slate-700 transition hover:bg-slate-200"
-                  aria-label="Rotate image"
-                >
-                  ↻
-                </button>
-                <button
-                  onClick={handleRetryCapture}
-                  className="rounded-lg border border-rose-300 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
-                >
-                  Retry
-                </button>
-                <button
-                  onClick={handleConfirmCapture}
-                  className="flex-1 rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
-                >
-                  Ok
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-5 w-full rounded-2xl border border-white/15 bg-slate-900/70 p-3 text-left">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-white">Captured pages</p>
-              <p className="text-xs text-slate-400">
-                {queuedImages.length === 0
-                  ? isStandaloneMode
-                    ? "Capture pages one by one and review them directly here."
-                    : "Capture each page one by one and submit them together."
-                  : `${queuedImages.length} page${queuedImages.length > 1 ? "s" : ""} ${isStandaloneMode ? "ready to review" : "ready to submit"}`}
-              </p>
-            </div>
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white">
+      {/* Top bar with status and capture button */}
+      <div className="border-b border-white/10 bg-slate-900/50 px-4 py-3 backdrop-blur">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-slate-300">{status}</p>
+          <div className="flex gap-2">
             <button
               type="button"
-              onClick={handleSubmitAll}
-              disabled={queuedImages.length === 0 || isUploading}
-              className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-600"
+              onClick={handleGalleryClick}
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-slate-800 p-2 text-white transition hover:bg-slate-700"
+              aria-label="Choose from gallery"
             >
-              {isUploading ? "Uploading..." : isStandaloneMode ? "Review locally" : "Submit all"}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageCapture}
+            />
+            <button
+              type="button"
+              onClick={handleCameraClick}
+              className="inline-flex items-center justify-center rounded-full bg-sky-500 p-2.5 text-white transition hover:bg-sky-600"
+              aria-label="Open camera"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleImageCapture}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Main preview and adjustment area */}
+      {previewImage ? (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Image display with corners */}
+          <div className="flex-1 flex items-center justify-center bg-slate-800 p-4 overflow-auto">
+            <div
+              ref={previewContainerRef}
+              className="relative w-full max-w-full"
+              onPointerMove={handlePreviewPointerMove}
+              onPointerUp={handlePreviewPointerUp}
+              onPointerLeave={handlePreviewPointerUp}
+              style={{ touchAction: "none" }}
+            >
+              <img
+                src={previewImage.previewUrl}
+                alt="Preview"
+                className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+                style={{ transform: `rotate(${previewImage.rotation}deg)` }}
+              />
+              <svg className="pointer-events-none absolute inset-0 w-full h-full">
+                <polygon
+                  points={previewImage.manualCorners
+                    .map((point) => `${point.x * 100}% ${point.y * 100}%`)
+                    .join(" ")}
+                  className="fill-sky-500/15"
+                  style={{ stroke: "rgba(56, 189, 248, 0.9)", strokeWidth: 3, strokeDasharray: "12 8" }}
+                />
+                {previewImage.manualCorners.map((point, index) => {
+                  const nextPoint = previewImage.manualCorners[(index + 1) % previewImage.manualCorners.length];
+                  return (
+                    <line
+                      key={`edge-${index}`}
+                      x1={`${point.x * 100}%`}
+                      y1={`${point.y * 100}%`}
+                      x2={`${nextPoint.x * 100}%`}
+                      y2={`${nextPoint.y * 100}%`}
+                      stroke="rgba(56, 189, 248, 0.9)"
+                      strokeWidth={2}
+                      strokeDasharray="8 6"
+                    />
+                  );
+                })}
+              </svg>
+              {previewImage.manualCorners.map((point, index) => (
+                <button
+                  key={`${index}-${point.x.toFixed(3)}-${point.y.toFixed(3)}`}
+                  type="button"
+                  aria-label={`Move ${["top-left", "top-right", "bottom-right", "bottom-left"][index]} corner`}
+                  className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-sky-500 shadow"
+                  style={{ left: `${point.x * 100}%`, top: `${point.y * 100}%` }}
+                  onPointerDown={(event) => handlePreviewPointerDown(event, index)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Control buttons */}
+          <div className="border-t border-white/10 bg-slate-900/70 px-4 py-3 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleRotatePreview}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-400 bg-slate-700 text-lg text-white transition hover:bg-slate-600"
+              aria-label="Rotate image"
+            >
+              ↻
+            </button>
+            <button
+              onClick={handleRetryCapture}
+              className="flex-1 rounded-lg border border-rose-400 px-4 py-2.5 text-sm font-medium text-rose-300 transition hover:bg-rose-950"
+            >
+              Retry
+            </button>
+            <button
+              onClick={handleConfirmCapture}
+              className="flex-1 rounded-lg bg-sky-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-sky-600"
+            >
+              Ok
             </button>
           </div>
 
-          {queuedImages.length === 0 ? (
-            <p className="text-sm text-slate-400">No page captured yet. Use the camera button to begin.</p>
-          ) : (
-            <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">
-              {queuedImages.map((item, index) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveImageId(item.id);
-                    setShowCornerPreview(true);
-                  }}
-                  className={`flex min-w-[72px] snap-start flex-col items-center rounded-xl border p-2 text-center transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-white/10 bg-slate-950/60"}`}
-                >
-                  <img src={item.previewUrl} alt={`Captured page ${index + 1}`} className="h-14 w-14 rounded-md object-cover" />
-                  <span className="mt-1 text-[11px] font-medium text-slate-200">Page {index + 1}</span>
-                </button>
-              ))}
+          {/* Thumbnails gallery */}
+          {queuedImages.length > 0 && (
+            <div className="border-t border-white/10 bg-slate-900 px-3 py-3">
+              <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory">
+                {queuedImages.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="flex min-w-[70px] snap-start flex-col gap-1.5"
+                  >
+                    <div className="relative">
+                      <img
+                        src={item.previewUrl}
+                        alt={`Page ${index + 1}`}
+                        onClick={() => setActiveImageId(item.id)}
+                        className={`h-16 w-16 rounded-lg object-cover cursor-pointer border-2 transition ${
+                          activeImageId === item.id ? "border-sky-400" : "border-white/20"
+                        }`}
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="text-xs font-medium text-rose-400 hover:text-rose-300"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
-
-        <div className="mt-4 text-sm text-slate-400">
-          {isStandaloneMode
-            ? "Tip: drag the corner handles to fit the page outline before you keep the capture."
-            : "Tip: drag the corner handles to fit the page outline before submission."}
+      ) : (
+        /* Empty state */
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-10">
+          <div className="text-center">
+            <p className="text-lg font-semibold text-white mb-2">Ready to capture</p>
+            <p className="text-sm text-slate-400 mb-6">Tap the camera button to capture a page and adjust the corners</p>
+            <button
+              type="button"
+              onClick={handleCameraClick}
+              className="inline-flex items-center justify-center rounded-full bg-sky-500 p-3 text-white transition hover:bg-sky-600"
+              aria-label="Open camera"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
         </div>
+      )}
 
-        <div className="mt-6 text-sm text-slate-400">
-          {isStandaloneMode
-            ? "Tip: keep the page flat and centered for a cleaner preview on this mobile screen."
-            : "Tip: keep the page flat and centered. The desktop view will update automatically after each capture."}
+      {/* Footer with submit button */}
+      {queuedImages.length > 0 && (
+        <div className="border-t border-white/10 bg-slate-900/70 px-4 py-3 flex items-center justify-between gap-3">
+          <div className="text-xs text-slate-400">
+            {queuedImages.length} page{queuedImages.length > 1 ? "s" : ""} captured
+          </div>
+          <button
+            type="button"
+            onClick={handleSubmitAll}
+            disabled={isUploading}
+            className="rounded-lg bg-sky-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-slate-600"
+          >
+            {isUploading ? "Submitting..." : "Submit"}
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
