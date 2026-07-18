@@ -441,8 +441,19 @@ export default function MobilePage() {
     }
 
     setActiveImageId(nextId);
+    if (draftImage.previewUrl) {
+      URL.revokeObjectURL(draftImage.previewUrl);
+    }
+
     setDraftImage(null);
-    setStatus("Page captured. The thumbnail is ready in your gallery.");
+    setActiveCornerIndex(null);
+
+    setStatus("Page saved. Ready for next page.");
+
+    // Automatically reopen camera
+    window.setTimeout(() => {
+      cameraInputRef.current?.click();
+    }, 250);
   };
 
   const handleSubmitAll = async () => {
@@ -535,7 +546,7 @@ export default function MobilePage() {
               <img
                 src={previewImage.previewUrl}
                 alt="Preview"
-                className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+                className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
                 style={{ transform: `rotate(${previewImage.rotation}deg)` }}
               />
               <svg className="pointer-events-none absolute inset-0 w-full h-full">
@@ -576,59 +587,94 @@ export default function MobilePage() {
           </div>
 
           {/* Control buttons */}
-          <div className="relative z-10 border-t border-white/10 bg-slate-900/70 px-4 py-3 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleRotatePreview}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-400 bg-slate-700 text-lg text-white transition hover:bg-slate-600"
-              aria-label="Rotate image"
-            >
-              ↻
-            </button>
-            <button
-              onClick={handleRetryCapture}
-              className="flex-1 rounded-lg border border-rose-400 px-4 py-2.5 text-sm font-medium text-rose-300 transition hover:bg-rose-950"
-            >
-              Retry
-            </button>
-            <button
-              onClick={handleConfirmCapture}
-              className="flex-1 rounded-lg bg-sky-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-sky-600"
-            >
-              Ok
-            </button>
+          <div className="border-t border-white/10 bg-slate-900 px-3 py-2">
+
+            <div className="grid grid-cols-5 gap-2">
+
+              <button
+                onClick={handleRotatePreview}
+                className="rounded-lg bg-slate-700 py-2"
+              >
+                ↻
+                <div className="text-xs">Rotate</div>
+              </button>
+
+              <button
+                onClick={handleRetryCapture}
+                className="rounded-lg bg-amber-600 py-2"
+              >
+                📷
+                <div className="text-xs">Retake</div>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (draftImage?.previewUrl) {
+                    URL.revokeObjectURL(draftImage.previewUrl);
+                  }
+
+                  setDraftImage(null);
+
+                  window.setTimeout(() => {
+                    cameraInputRef.current?.click();
+                  }, 200);
+                }}
+                className="rounded-lg bg-red-600 py-2"
+              >
+                🗑
+                <div className="text-xs">Delete</div>
+              </button>
+
+              <button
+                onClick={handleConfirmCapture}
+                className="rounded-lg bg-sky-600 py-2"
+              >
+                ✓
+                <div className="text-xs">OK</div>
+              </button>
+
+              <button
+                onClick={handleSubmitAll}
+                disabled={queuedImages.length === 0}
+                className="rounded-lg bg-green-600 py-2 disabled:opacity-40"
+              >
+                ⬆
+                <div className="text-xs">Submit</div>
+              </button>
+
+            </div>
+
           </div>
 
           {/* Thumbnails gallery */}
-          {queuedImages.length > 0 && (
-            <div className="border-t border-white/10 bg-slate-900 px-3 py-3">
-              <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory">
-                {queuedImages.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="flex min-w-[70px] snap-start flex-col gap-1.5"
+          <div className="border-t border-white/10 bg-slate-900 px-2 py-2">
+            <div className="flex gap-2 overflow-x-auto">
+              {queuedImages.map((item,index)=>(
+                <div
+                  key={item.id}
+                  className="relative flex-shrink-0"
                   >
-                    <div className="relative">
-                      <img
-                        src={item.previewUrl}
-                        alt={`Page ${index + 1}`}
-                        onClick={() => setActiveImageId(item.id)}
-                        className={`h-16 w-16 rounded-lg object-cover cursor-pointer border-2 transition ${
-                          activeImageId === item.id ? "border-sky-400" : "border-white/20"
-                        }`}
-                      />
-                    </div>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="text-xs font-medium text-rose-400 hover:text-rose-300"
+
+                  <img
+                  src={item.previewUrl}
+                  onClick={()=>setActiveImageId(item.id)}
+                  className={`h-16 w-16 rounded-lg object-cover border-2 ${
+                  activeImageId===item.id
+                  ?"border-sky-500"
+                  :"border-gray-700"
+                  }`}
+                  />
+
+                  <button
+                    onClick={()=>handleDelete(item.id)}
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-600 text-xs"
                     >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    ×
+                  </button>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
         </div>
       ) : (
         /* Empty state */
@@ -648,23 +694,6 @@ export default function MobilePage() {
               </svg>
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Footer with submit button */}
-      {queuedImages.length > 0 && (
-        <div className="border-t border-white/10 bg-slate-900/70 px-4 py-3 flex items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">
-            {queuedImages.length} page{queuedImages.length > 1 ? "s" : ""} captured
-          </div>
-          <button
-            type="button"
-            onClick={handleSubmitAll}
-            disabled={isUploading}
-            className="rounded-lg bg-sky-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-slate-600"
-          >
-            {isUploading ? "Submitting..." : "Submit"}
-          </button>
         </div>
       )}
     </div>
