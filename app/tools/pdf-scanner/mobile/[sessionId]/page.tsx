@@ -251,72 +251,39 @@ export default function MobilePage() {
     } satisfies QueuedImage;
   };
 
-  const uploadImage = async (file: File, points: Point[] = [], rotation = 0, persistLocally = false): Promise<boolean> => {
-    try {
-      setIsUploading(true);
-      setStatus("Preparing page...");
+  const addImageToQueue = async (file: File, points: Point[] = [], rotation = 0) => {
+    const queuedItem = await createQueuedImageFromFile(file, points, rotation);
+    setQueuedImages((prev) => [...prev, queuedItem]);
+    setActiveImageId(queuedItem.id);
+    setStatus("Page added to queue. Capture another page or submit all pages.");
+  };
 
-      const queuedItem = await createQueuedImageFromFile(file, points, rotation);
+  const uploadImage = async (file: File): Promise<boolean> => {
+    const reader = new FileReader();
 
-      if (isStandaloneMode || persistLocally) {
-        setQueuedImages((prev) => [...prev, queuedItem]);
-        setActiveImageId(queuedItem.id);
+    return await new Promise<boolean>((resolve) => {
+      reader.onloadend = async () => {
+        try {
+          const response = await fetch("/api/pdf-scanner/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sessionId,
+              image: reader.result,
+            }),
+          });
 
-        if (isStandaloneMode) {
-          setStatus("Page captured locally. Adjust the corners and review it below.");
-          setIsUploading(false);
-          return true;
-        }
-      }
-
-      if (isStandaloneMode) {
-        return true;
-      }
-
-      const reader = new FileReader();
-
-      return await new Promise<boolean>((resolve) => {
-        reader.onloadend = async () => {
-          try {
-            const response = await fetch("/api/pdf-scanner/upload", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                sessionId,
-                image: reader.result,
-              }),
-            });
-
-            if (response.ok) {
-              setStatus("Page uploaded. Capture the next page when ready.");
-              resolve(true);
-            } else {
-              setStatus("Upload failed. Please retry.");
-              resolve(false);
-            }
-          } catch {
-            setStatus("Upload failed. Please retry.");
-            resolve(false);
-          } finally {
-            setIsUploading(false);
-          }
-        };
-
-        reader.onerror = () => {
-          setStatus("Upload failed. Please retry.");
-          setIsUploading(false);
+          resolve(response.ok);
+        } catch {
           resolve(false);
-        };
+        }
+      };
 
-        reader.readAsDataURL(queuedItem.file);
-      });
-    } catch {
-      setStatus("Unable to process the image. Please try again.");
-      setIsUploading(false);
-      return false;
-    }
+      reader.onerror = () => resolve(false);
+      reader.readAsDataURL(file);
+    });
   };
 
   const handlePreviewPointerDown = (
@@ -382,7 +349,9 @@ export default function MobilePage() {
       URL.revokeObjectURL(draftImage.previewUrl);
     }
 
-    await prepareDraftImage(file);
+    await addImageToQueue(file);
+    setDraftImage(null);
+    setActiveCornerIndex(null);
     event.target.value = "";
   };
 
@@ -447,45 +416,32 @@ export default function MobilePage() {
   };
 
   const handleSubmitAll = async () => {
-    if (draftImage) {
-      const uploaded = await uploadImage(draftImage.file, draftImage.manualCorners, draftImage.rotation, true);
-
-      if (!uploaded) {
-        return;
-      }
-
-      if (draftImage.previewUrl) {
-        URL.revokeObjectURL(draftImage.previewUrl);
-      }
-
-      setDraftImage(null);
-      setActiveCornerIndex(null);
-      setActiveImageId(null);
-
-      window.setTimeout(() => {
-        cameraInputRef.current?.click();
-      }, 180);
-      return;
-    }
-
     if (queuedImages.length === 0) {
       return;
     }
 
+    setIsUploading(true);
+    setStatus("Uploading all pages to desktop...");
+
     if (isStandaloneMode) {
-      setStatus("Captured pages are ready locally. You can review them below or remove them when you are done.");
+      setIsUploading(false);
+      setStatus(`Captured ${queuedImages.length} page${queuedImages.length === 1 ? "" : "s"}. Submit is not required in local mode.`);
       return;
     }
 
     for (const item of queuedImages) {
-      const uploaded = await uploadImage(item.file, item.manualCorners, item.rotation, true);
-
+      const uploaded = await uploadImage(item.file);
       if (!uploaded) {
+        setIsUploading(false);
+        setStatus("Upload failed. Please retry submitting all pages.");
         return;
       }
     }
 
-    setStatus("All pages are ready locally and uploaded to the desktop workspace.");
+    setQueuedImages([]);
+    setActiveImageId(null);
+    setIsUploading(false);
+    setStatus("All pages have been uploaded to the desktop workspace.");
   };
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
@@ -653,121 +609,96 @@ export default function MobilePage() {
         </div>
 
 
+        {queuedImages.length > 0 && (
+          <div className="shrink-0 border-t border-white/10 bg-slate-950 p-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-400">Pages ready</p>
+                <p className="mt-1 text-sm text-slate-300">
+                  {queuedImages.length} page{queuedImages.length === 1 ? "" : "s"} queued for upload.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {queuedImages.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setDraftImage(null);
+                    setActiveImageId(item.id);
+                  }}
+                  className={`w-full rounded-3xl border p-3 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-100">Page {index + 1}</p>
+                      <p className="text-xs text-slate-400">Tap to review</p>
+                    </div>
+                    <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <img
+                    src={item.previewUrl}
+                    alt={`Queued page ${index + 1}`}
+                    className="mt-3 h-28 w-full rounded-2xl object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDelete(item.id);
+                    }}
+                    className="mt-3 inline-flex rounded-full bg-red-600 px-3 py-1.5 text-xs font-medium text-white"
+                  >
+                    Remove page
+                  </button>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* BOTTOM ACTIONS */}
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
-
           <div className="grid grid-cols-4 gap-2">
-
-
             <button
               type="button"
               onClick={handleRotatePreview}
               className="rounded-xl bg-slate-700 py-2 text-white"
             >
               <RotateCw className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">
-                Rotate
-              </div>
+              <div className="mt-1 text-xs">Rotate</div>
             </button>
-
-
-
             <button
               type="button"
               onClick={handleRetryCapture}
               className="rounded-xl bg-orange-600 py-2 text-white"
             >
               <Camera className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">
-                Retake
-              </div>
+              <div className="mt-1 text-xs">Retake</div>
             </button>
-
-
-
             <button
               type="button"
               onClick={handleDeletePreview}
               className="rounded-xl bg-red-600 py-2 text-white"
             >
               <Trash2 className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">
-                Delete
-              </div>
+              <div className="mt-1 text-xs">Delete</div>
             </button>
-
             <button
               type="button"
               onClick={handleSubmitAll}
-              className="rounded-xl bg-green-600 py-2 text-white"
+              disabled={queuedImages.length === 0 || isUploading}
+              className="rounded-xl bg-green-600 py-2 text-white disabled:opacity-50"
             >
               <Upload className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">
-                Submit
-              </div>
+              <div className="mt-1 text-xs">Submit all</div>
             </button>
-
-
           </div>
-
-
         </div>
-
-        {/* THUMBNAILS */}
-
-        {queuedImages.length > 0 && (
-
-          <div className="bg-slate-900 px-3 py-2">
-
-            <div className="flex gap-2">
-
-
-            {queuedImages.map(item=>(
-
-              <div
-                key={item.id}
-                className="relative"
-              >
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDraftImage(null);
-                    setActiveImageId(item.id);
-                  }}
-                  className={`rounded-lg border ${activeImageId === item.id ? "border-sky-400" : "border-slate-700"}`}
-                >
-                  <img
-                    src={item.previewUrl}
-                    className="h-14 w-14 rounded-lg object-cover"
-                  />
-                </button>
-
-
-                <button
-                  onClick={()=>
-                    handleDelete(item.id)
-                  }
-                  className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white"
-                  aria-label="Delete thumbnail"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-
-
-              </div>
-
-
-            ))}
-
-
-            </div>
-
-          </div>
-
-        )}
-
 
       </div>
 

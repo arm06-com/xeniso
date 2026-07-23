@@ -71,6 +71,51 @@ function rotateImageDataUrl(dataUrl: string, rotation: number) {
   });
 }
 
+function createScanEffectImageDataUrl(dataUrl: string) {
+  return new Promise<string>((resolve, reject) => {
+    const image = new Image();
+
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        reject(new Error("Unable to create canvas context"));
+        return;
+      }
+
+      const width = image.width;
+      const height = image.height;
+      canvas.width = width;
+      canvas.height = height;
+
+      context.filter = "grayscale(100%) contrast(145%) brightness(110%)";
+      context.drawImage(image, 0, 0, width, height);
+
+      const imageData = context.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      for (let index = 0; index < data.length; index += 4) {
+        const red = data[index];
+        const green = data[index + 1];
+        const blue = data[index + 2];
+        const brightness = 0.299 * red + 0.587 * green + 0.114 * blue;
+        const adjusted = brightness > 210 ? 255 : Math.max(0, Math.min(255, (brightness - 40) * 1.2 + 40));
+        const final = adjusted > 235 ? 255 : adjusted;
+        data[index] = final;
+        data[index + 1] = final;
+        data[index + 2] = final;
+      }
+
+      context.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+
+    image.onerror = () => reject(new Error("Failed to load image"));
+    image.src = dataUrl;
+  });
+}
+
 function autoCropImageDataUrl(dataUrl: string) {
   return new Promise<string>((resolve, reject) => {
     const image = new Image();
@@ -406,7 +451,7 @@ export default function PdfScannerPage() {
     setDraggedId(null);
   };
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async (useScanEffect: boolean) => {
     if (images.length === 0) {
       return;
     }
@@ -421,6 +466,10 @@ export default function PdfScannerPage() {
 
         if (page.rotation !== 0) {
           imageDataUrl = await rotateImageDataUrl(page.dataUrl, page.rotation);
+        }
+
+        if (useScanEffect) {
+          imageDataUrl = await createScanEffectImageDataUrl(imageDataUrl);
         }
 
         const bytes = dataUrlToUint8Array(imageDataUrl);
@@ -613,6 +662,7 @@ export default function PdfScannerPage() {
             )}
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            
             {isMobileDevice ? (
               <>
                 <h2 className="text-lg font-semibold text-slate-900">Direct mobile capture</h2>
@@ -640,17 +690,30 @@ export default function PdfScannerPage() {
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Captured pages</h2>
             </div>
-            <button
-              onClick={handleDownloadPdf}
-              disabled={images.length === 0 || isCreatingPdf}
-              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              {isCreatingPdf ? "Creating PDF..." : "Create PDF"}
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <button
+                onClick={() => handleDownloadPdf(false)}
+                disabled={images.length === 0 || isCreatingPdf}
+                className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {isCreatingPdf ? "Creating PDF..." : "Create PDF with original image"}
+              </button>
+              <button
+                onClick={() => handleDownloadPdf(true)}
+                disabled={images.length === 0 || isCreatingPdf}
+                className="rounded-full bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {isCreatingPdf ? "Creating PDF..." : "Create PDF with scan effect"}
+              </button>
+            </div>
+          </div>
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <p className="font-medium text-slate-700">Scan effect:</p>
+            <p>Create a clean, scanner-style PDF by enhancing contrast, removing color noise, and brightening paper backgrounds.</p>
           </div>
 
           {images.length === 0 ? (
