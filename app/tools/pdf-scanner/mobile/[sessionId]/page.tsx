@@ -756,7 +756,7 @@ export default function MobilePage() {
                 return (
                 <div
                   key={item.id}
-                  className={`flex min-w-0 items-center gap-3 border p-2 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
+                  className={`relative min-w-0 gap-3 border p-2 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
                 >
                   <button
                     type="button"
@@ -773,7 +773,7 @@ export default function MobilePage() {
                     />
                   </button>
 
-                  <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                  <div className="absolute bottom-0 left-0 right-0 flex min-w-0 flex-1 items-center justify-between gap-2 p-2">
                     <p className="text-[11px] font-semibold text-slate-100">{pageNumber}</p>
                     <button
                       type="button"
@@ -797,16 +797,16 @@ export default function MobilePage() {
         {/* BOTTOM ACTIONS */}
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             <div className="mb-2 flex justify-end">
               <button
                 type="button"
                 onClick={handleScanNext}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-600 text-white shadow-lg"
+                className="rounded-xl py-2 bg-sky-600 text-white"
                 aria-label="Capture next page"
               >
                 <Camera className="h-5 w-5" />
-                <div className="mt-1 text-[10px]">Next Page</div>
+                <div className="mt-1 text-[10px]">Scan Next</div>
               </button>
             </div>
             <button
