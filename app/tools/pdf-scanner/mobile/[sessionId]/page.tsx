@@ -465,18 +465,31 @@ export default function MobilePage() {
       return;
     }
 
-    try {
-      if (typeof input.showPicker === "function") {
-        input.showPicker();
-        return;
-      }
-    } catch {
-      // fall back to click
-    }
+    const triggerPicker = () => {
+      try {
+        if (typeof input.showPicker === "function") {
+          const pickerResult = input.showPicker();
 
-    window.setTimeout(() => {
+          if (typeof pickerResult === "object" && pickerResult !== null && "catch" in pickerResult) {
+            (pickerResult as Promise<void>).catch(() => {
+              input.click();
+            });
+          }
+
+          return;
+        }
+      } catch {
+        // fall back to click
+      }
+
       input.click();
-    }, 50);
+    };
+
+    if (typeof window !== "undefined") {
+      window.setTimeout(triggerPicker, 0);
+    } else {
+      triggerPicker();
+    }
   };
 
   const handleCameraClick = () => {
@@ -600,6 +613,25 @@ export default function MobilePage() {
 
   return (
   <div className="min-h-screen flex flex-col bg-slate-950 text-white overflow-x-hidden">
+    <input
+      id={cameraInputId}
+      ref={cameraInputRef}
+      type="file"
+      accept="image/*"
+      capture="environment"
+      className="sr-only"
+      onChange={handleImageCapture}
+    />
+
+    <input
+      id={galleryInputId}
+      ref={galleryInputRef}
+      type="file"
+      accept="image/*"
+      className="sr-only"
+      onChange={handleImageCapture}
+    />
+
     {/* STATUS CENTER */}
     {!previewImage && (
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
@@ -619,14 +651,6 @@ export default function MobilePage() {
             <Images className="h-8 w-8" />
           </label>
 
-          <input
-            id={galleryInputId}
-            ref={galleryInputRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={handleImageCapture}
-          />
           {/* Camera */}
           <label
             htmlFor={cameraInputId}
@@ -635,16 +659,6 @@ export default function MobilePage() {
           >
             <Camera className="h-8 w-8" />
           </label>
-
-          <input
-            id={cameraInputId}
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="sr-only"
-            onChange={handleImageCapture}
-          />
 
         </div>
 
@@ -757,7 +771,7 @@ export default function MobilePage() {
                   </button>
 
                   <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                    <p className="text-[11px] font-semibold text-slate-100">Page {index + 1}</p>
+                    <p className="text-[11px] font-semibold text-slate-100">{index + 1}</p>
                     <button
                       type="button"
                       onClick={(event) => {
