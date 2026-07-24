@@ -144,11 +144,14 @@ export default function MobilePage() {
   const [isUploading, setIsUploading] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputId = "mobile-camera-input";
+  const galleryInputId = "mobile-gallery-input";
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
   const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
   const [draftImage, setDraftImage] = useState<QueuedImage | null>(null);
+  const [selectionCorners, setSelectionCorners] = useState<Point[]>(createDefaultManualCorners());
   const queuedImagesRef = useRef<QueuedImage[]>([]);
   const latestPreviewStateRef = useRef<{ corners: Point[]; rotation: number } | null>(null);
 
@@ -200,7 +203,7 @@ export default function MobilePage() {
     const y = clamp((clientY - rect.top) / rect.height, 0, 1);
 
     if (draftImage) {
-      const nextCorners = draftImage.manualCorners.map((point, index) =>
+      const nextCorners = selectionCorners.map((point, index) =>
         index === activeCornerIndex ? { x, y } : point
       );
 
@@ -209,14 +212,7 @@ export default function MobilePage() {
         rotation: draftImage.rotation,
       };
 
-      setDraftImage((prev) =>
-        prev
-          ? {
-              ...prev,
-              manualCorners: nextCorners,
-            }
-          : prev
-      );
+      setSelectionCorners(nextCorners);
       return;
     }
 
@@ -225,7 +221,7 @@ export default function MobilePage() {
     }
 
     const currentItem = queuedImages.find((item) => item.id === activeImageId);
-    const nextCorners = (currentItem?.manualCorners ?? createDefaultManualCorners()).map((point, index) =>
+    const nextCorners = (currentItem?.manualCorners ?? selectionCorners).map((point, index) =>
       index === activeCornerIndex ? { x, y } : point
     );
 
@@ -234,18 +230,7 @@ export default function MobilePage() {
       rotation: currentItem?.rotation ?? 0,
     };
 
-    setQueuedImages((prev) =>
-      prev.map((item) => {
-        if (item.id !== activeImageId) {
-          return item;
-        }
-
-        return {
-          ...item,
-          manualCorners: nextCorners,
-        };
-      })
-    );
+    setSelectionCorners(nextCorners);
   };
 
   const createQueuedImageFromFile = async (file: File, points: Point[] = createDefaultManualCorners(), rotation = 0) => {
@@ -368,7 +353,19 @@ export default function MobilePage() {
   const handlePreviewPointerUp = () => {
     setActiveCornerIndex(null);
 
-    if (!activeImageId || !previewImage || !latestPreviewStateRef.current) {
+    if (!previewImage || !latestPreviewStateRef.current) {
+      return;
+    }
+
+    if (draftImage) {
+      setDraftImage((prev) =>
+        prev
+          ? {
+              ...prev,
+              manualCorners: latestPreviewStateRef.current!.corners.map((point) => ({ ...point })),
+            }
+          : prev
+      );
       return;
     }
 
@@ -562,9 +559,15 @@ export default function MobilePage() {
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
   const previewImage = draftImage ?? activeImage;
-  const visibleCorners = previewImage?.manualCorners?.length === 4
-    ? previewImage.manualCorners
-    : createDefaultManualCorners();
+  const visibleCorners = selectionCorners;
+
+  useEffect(() => {
+    const nextCorners = previewImage?.manualCorners?.length === 4
+      ? previewImage.manualCorners.map((point) => ({ ...point }))
+      : createDefaultManualCorners();
+
+    setSelectionCorners(nextCorners);
+  }, [previewImage?.id, previewImage?.manualCorners]);
 
   return (
   <div className="min-h-screen flex flex-col bg-slate-950 text-white overflow-x-hidden">
@@ -579,16 +582,16 @@ export default function MobilePage() {
         <div className="flex gap-6">
 
           {/* Gallery */}
-          <button
-            onClick={handleGalleryClick}
-            className="flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-slate-800 text-white"
+          <label
+            htmlFor={galleryInputId}
+            className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-slate-800 text-white"
             aria-label="Choose from gallery"
           >
             <Images className="h-8 w-8" />
-          </button>
-
+          </label>
 
           <input
+            id={galleryInputId}
             ref={galleryInputRef}
             type="file"
             accept="image/*"
@@ -596,16 +599,16 @@ export default function MobilePage() {
             onChange={handleImageCapture}
           />
           {/* Camera */}
-          <button
-            onClick={handleCameraClick}
-            className="flex h-20 w-20 items-center justify-center rounded-full bg-sky-600 text-white shadow-lg"
+          <label
+            htmlFor={cameraInputId}
+            className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-full bg-sky-600 text-white shadow-lg"
             aria-label="Open camera"
           >
             <Camera className="h-8 w-8" />
-          </button>
-
+          </label>
 
           <input
+            id={cameraInputId}
             ref={cameraInputRef}
             type="file"
             accept="image/*"
@@ -757,21 +760,19 @@ export default function MobilePage() {
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
           <div className="mb-2 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleScanNext}
-              className="flex-1 rounded-xl bg-sky-600 px-3 py-2 text-sm font-semibold text-white"
+            <label
+              htmlFor={cameraInputId}
+              className="flex-1 cursor-pointer rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
             >
               Scan Next
-            </button>
-            <button
-              type="button"
-              onClick={handleGalleryClick}
-              className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-white"
+            </label>
+            <label
+              htmlFor={galleryInputId}
+              className="cursor-pointer rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-white"
               aria-label="Choose from gallery"
             >
               <Images className="h-4 w-4" />
-            </button>
+            </label>
           </div>
           <div className="grid grid-cols-4 gap-2">
             <button
