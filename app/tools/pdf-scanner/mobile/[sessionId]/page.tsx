@@ -152,6 +152,7 @@ export default function MobilePage() {
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
   const [draftImage, setDraftImage] = useState<QueuedImage | null>(null);
   const [selectionCorners, setSelectionCorners] = useState<Point[]>(createDefaultManualCorners());
+  const [previewHeightClass, setPreviewHeightClass] = useState("h-[46vh]");
   const queuedImagesRef = useRef<QueuedImage[]>([]);
   const latestPreviewStateRef = useRef<{ corners: Point[]; rotation: number } | null>(null);
 
@@ -340,6 +341,21 @@ export default function MobilePage() {
     previewContainerRef.current?.setPointerCapture(event.pointerId);
     setActiveCornerIndex(cornerIndex);
   };
+
+  useEffect(() => {
+    const updatePreviewHeight = () => {
+      if (window.innerHeight < 700) {
+        setPreviewHeightClass("h-[40vh]");
+      } else {
+        setPreviewHeightClass("h-[46vh]");
+      }
+    };
+
+    updatePreviewHeight();
+    window.addEventListener("resize", updatePreviewHeight);
+
+    return () => window.removeEventListener("resize", updatePreviewHeight);
+  }, []);
 
   const handlePreviewPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
     if (activeCornerIndex === null) {
@@ -632,12 +648,10 @@ export default function MobilePage() {
 
       <div className="flex h-full min-h-0 flex-col">
         {/* IMAGE AREA */}
-        <div className="relative flex-1 min-h-0 overflow-hidden bg-slate-900 p-1.5">
-
-
+        <div className="relative flex-shrink-0 overflow-hidden bg-slate-900 p-1.5">
           <div
             ref={previewContainerRef}
-            className="relative flex h-full w-full items-center justify-center"
+            className={`relative flex w-full items-center justify-center ${previewHeightClass}`}
             onPointerMove={handlePreviewPointerMove}
             onPointerUp={handlePreviewPointerUp}
             onPointerLeave={handlePreviewPointerUp}
@@ -759,19 +773,12 @@ export default function MobilePage() {
         {/* BOTTOM ACTIONS */}
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2">
             <label
               htmlFor={cameraInputId}
-              className="flex-1 cursor-pointer rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
+              className="flex w-full cursor-pointer items-center justify-center rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
             >
               Scan Next
-            </label>
-            <label
-              htmlFor={galleryInputId}
-              className="cursor-pointer rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-white"
-              aria-label="Choose from gallery"
-            >
-              <Images className="h-4 w-4" />
             </label>
           </div>
           <div className="grid grid-cols-4 gap-2">
