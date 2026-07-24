@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useParams } from "next/navigation";
 import imageCompression from "browser-image-compression";
-import { Camera, Images, RotateCw, Trash2, Upload, X } from "lucide-react";
+import { Camera, Images, RotateCw, Trash2, Upload } from "lucide-react";
 
 type Point = {
   x: number;
@@ -231,8 +231,9 @@ export default function MobilePage() {
     );
   };
 
-  const createQueuedImageFromFile = async (file: File, points: Point[] = [], rotation = 0) => {
-    const preparedFile = await createCroppedFile(file, points, rotation);
+  const createQueuedImageFromFile = async (file: File, points: Point[] = createDefaultManualCorners(), rotation = 0) => {
+    const resolvedPoints = points.length === 4 ? points : createDefaultManualCorners();
+    const preparedFile = await createCroppedFile(file, resolvedPoints, rotation);
     const compressed = await imageCompression(preparedFile, {
       maxSizeMB: 0.5,
       maxWidthOrHeight: 1600,
@@ -246,12 +247,12 @@ export default function MobilePage() {
       id: nextId,
       file: compressed,
       previewUrl,
-      manualCorners: points.map((point) => ({ ...point })),
+      manualCorners: resolvedPoints.map((point) => ({ ...point })),
       rotation,
     } satisfies QueuedImage;
   };
 
-  const addImageToQueue = async (file: File, points: Point[] = [], rotation = 0) => {
+  const addImageToQueue = async (file: File, points: Point[] = createDefaultManualCorners(), rotation = 0) => {
     const queuedItem = await createQueuedImageFromFile(file, points, rotation);
     setQueuedImages((prev) => [...prev, queuedItem]);
     setActiveImageId(queuedItem.id);
@@ -359,6 +360,10 @@ export default function MobilePage() {
     cameraInputRef.current?.click();
   };
 
+  const handleScanNext = () => {
+    cameraInputRef.current?.click();
+  };
+
   const handleGalleryClick = () => {
     galleryInputRef.current?.click();
   };
@@ -446,6 +451,9 @@ export default function MobilePage() {
 
   const activeImage = queuedImages.find((item) => item.id === activeImageId) ?? null;
   const previewImage = draftImage ?? activeImage;
+  const visibleCorners = previewImage?.manualCorners?.length === 4
+    ? previewImage.manualCorners
+    : createDefaultManualCorners();
 
   return (
   <div className="min-h-screen flex flex-col bg-slate-950 text-white overflow-x-hidden">
@@ -558,14 +566,14 @@ export default function MobilePage() {
             />
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
               <polygon
-                points={previewImage.manualCorners.map((p) => `${p.x * 100}% ${p.y * 100}%`).join(" ")}
+                points={visibleCorners.map((p) => `${p.x * 100}% ${p.y * 100}%`).join(" ")}
                 fill="rgba(56,189,248,.15)"
                 stroke="#38bdf8"
                 strokeWidth="3"
                 strokeDasharray="10 6"
               />
-              {previewImage.manualCorners.map((point, index) => {
-                const nextPoint = previewImage.manualCorners[(index + 1) % previewImage.manualCorners.length];
+              {visibleCorners.map((point, index) => {
+                const nextPoint = visibleCorners[(index + 1) % visibleCorners.length];
                 return (
                   <line
                     key={`edge-${index}`}
@@ -579,7 +587,7 @@ export default function MobilePage() {
                   />
                 );
               })}
-              {previewImage.manualCorners.map((point) => (
+              {visibleCorners.map((point) => (
                 <circle
                   key={`${point.x}-${point.y}`}
                   cx={`${point.x * 100}%`}
@@ -591,7 +599,7 @@ export default function MobilePage() {
                 />
               ))}
             </svg>
-            {previewImage.manualCorners.map((point,index)=>(
+            {visibleCorners.map((point,index)=>(
               <button
                 key={index}
                 type="button"
@@ -663,6 +671,15 @@ export default function MobilePage() {
         {/* BOTTOM ACTIONS */}
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
+          <div className="mb-2">
+            <button
+              type="button"
+              onClick={handleScanNext}
+              className="w-full rounded-xl bg-sky-600 py-2.5 text-sm font-semibold text-white"
+            >
+              Scan Next
+            </button>
+          </div>
           <div className="grid grid-cols-4 gap-2">
             <button
               type="button"
