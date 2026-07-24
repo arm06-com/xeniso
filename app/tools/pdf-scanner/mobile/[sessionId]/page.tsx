@@ -737,9 +737,24 @@ export default function MobilePage() {
               {queuedImages.map((item, index) => (
                 <div
                   key={item.id}
-                  className={`min-w-[88px] rounded-2xl border p-2 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
+                  className={`flex min-w-[220px] items-center gap-3 rounded-2xl border p-2 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftImage(null);
+                      setActiveImageId(item.id);
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    <img
+                      src={item.previewUrl}
+                      alt={`Queued page ${index + 1}`}
+                      className="h-[60px] w-[40px] rounded-xl object-cover"
+                    />
+                  </button>
+
+                  <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
                     <p className="text-[11px] font-semibold text-slate-100">Page {index + 1}</p>
                     <button
                       type="button"
@@ -753,20 +768,6 @@ export default function MobilePage() {
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDraftImage(null);
-                      setActiveImageId(item.id);
-                    }}
-                    className="mt-2 block"
-                  >
-                    <img
-                      src={item.previewUrl}
-                      alt={`Queued page ${index + 1}`}
-                      className="h-[60px] w-[40px] rounded-xl object-cover"
-                    />
-                  </button>
                 </div>
               ))}
             </div>
@@ -777,12 +778,13 @@ export default function MobilePage() {
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
           <div className="mb-2">
-            <label
-              htmlFor={cameraInputId}
-              className="flex w-full cursor-pointer items-center justify-center rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
+            <button
+              type="button"
+              onClick={handleScanNext}
+              className="flex items-center justify-center rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
             >
               Scan Next
-            </label>
+            </button>
           </div>
           <div className="grid grid-cols-4 gap-2">
             <button
@@ -816,7 +818,7 @@ export default function MobilePage() {
               className="rounded-xl bg-green-600 py-2 text-white disabled:opacity-50"
             >
               <Upload className="mx-auto h-4 w-4" />
-              <div className="mt-1 text-[10px]">Submit</div>
+              <div className="mt-1 text-[10px]">Submit All</div>
             </button>
           </div>
         </div>
