@@ -254,6 +254,43 @@ export default function MobilePage() {
     } satisfies QueuedImage;
   };
 
+  const rebuildQueuedImagePreview = async (
+    imageId: string,
+    sourceFile: File,
+    nextCorners: Point[],
+    nextRotation: number,
+    previousPreviewUrl?: string
+  ) => {
+    if (previousPreviewUrl) {
+      URL.revokeObjectURL(previousPreviewUrl);
+    }
+
+    const preparedFile = await createCroppedFile(sourceFile, nextCorners, nextRotation);
+    const compressed = await imageCompression(preparedFile, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 1600,
+      useWebWorker: true,
+    });
+
+    const previewUrl = URL.createObjectURL(compressed);
+
+    setQueuedImages((prev) =>
+      prev.map((item) => {
+        if (item.id !== imageId) {
+          return item;
+        }
+
+        return {
+          ...item,
+          file: compressed,
+          previewUrl,
+          manualCorners: nextCorners.map((point) => ({ ...point })),
+          rotation: nextRotation,
+        };
+      })
+    );
+  };
+
   const addImageToQueue = async (file: File, points: Point[] = createDefaultManualCorners(), rotation = 0) => {
     const queuedItem = await createQueuedImageFromFile(file, points, rotation);
     setQueuedImages((prev) => [...prev, queuedItem]);
@@ -314,6 +351,24 @@ export default function MobilePage() {
 
   const handlePreviewPointerUp = () => {
     setActiveCornerIndex(null);
+
+    if (!activeImageId || !previewImage) {
+      return;
+    }
+
+    const currentItem = queuedImages.find((item) => item.id === activeImageId);
+
+    if (!currentItem) {
+      return;
+    }
+
+    void rebuildQueuedImagePreview(
+      currentItem.id,
+      currentItem.sourceFile,
+      currentItem.manualCorners.map((point) => ({ ...point })),
+      currentItem.rotation,
+      currentItem.previewUrl
+    );
   };
 
   const handleRotatePreview = () => {
@@ -326,8 +381,24 @@ export default function MobilePage() {
       return;
     }
 
+    const currentItem = queuedImages.find((item) => item.id === activeImageId);
+
+    if (!currentItem) {
+      return;
+    }
+
+    const nextRotation = (currentItem.rotation + 90) % 360;
+
     setQueuedImages((prev) =>
-      prev.map((item) => (item.id === activeImageId ? { ...item, rotation: (item.rotation + 90) % 360 } : item))
+      prev.map((item) => (item.id === activeImageId ? { ...item, rotation: nextRotation } : item))
+    );
+
+    void rebuildQueuedImagePreview(
+      currentItem.id,
+      currentItem.sourceFile,
+      currentItem.manualCorners.map((point) => ({ ...point })),
+      nextRotation,
+      currentItem.previewUrl
     );
   };
 
@@ -359,7 +430,7 @@ export default function MobilePage() {
     event.target.value = "";
   };
 
-  const openFileInput = (inputRef: React.MutableRefObject<HTMLInputElement | null>) => {
+  const openFileInput = (inputRef: { current: HTMLInputElement | null }) => {
     const input = inputRef.current;
 
     if (!input) {
@@ -372,7 +443,7 @@ export default function MobilePage() {
         return;
       }
     } catch {
-      // Fall back to click below.
+      // fall back to click
     }
 
     input.click();
@@ -457,8 +528,7 @@ export default function MobilePage() {
     }
 
     for (const item of queuedImages) {
-      const preparedFile = await createCroppedFile(item.sourceFile, item.manualCorners, item.rotation);
-      const uploaded = await uploadImage(preparedFile);
+      const uploaded = await uploadImage(item.file);
       if (!uploaded) {
         setIsUploading(false);
         setStatus("Upload failed. Please retry submitting all pages.");
@@ -540,31 +610,6 @@ export default function MobilePage() {
     {previewImage && (
 
       <div className="flex h-full min-h-0 flex-col">
-        {/* Top floating buttons */}
-        <div className="shrink-0 py-2 flex justify-center gap-4">
-
-
-          <button
-            type="button"
-            onClick={handleGalleryClick}
-            className="pointer-events-auto rounded-full bg-orange-500/80 px-5 py-3 text-white"
-            aria-label="Choose from gallery"
-          >
-            <Images className="h-5 w-5" />
-          </button>
-
-
-          <button
-            type="button"
-            onClick={handleCameraClick}
-            className="pointer-events-auto rounded-full bg-sky-600 px-5 py-3 text-white"
-            aria-label="Open camera"
-          >
-            <Camera className="h-5 w-5" />
-          </button>
-
-        </div>
-
         {/* IMAGE AREA */}
         <div className="relative flex-1 min-h-0 overflow-hidden bg-slate-900 p-2">
 
@@ -659,7 +704,7 @@ export default function MobilePage() {
                     setDraftImage(null);
                     setActiveImageId(item.id);
                   }}
-                  className={`w-full rounded-3xl border p-3 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
+                  className={`border p-3 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
