@@ -748,12 +748,15 @@ export default function MobilePage() {
 
 
         {queuedImages.length > 0 && (
-          <div className="grid grid-cols-2 shrink-0 border-t border-white/10 bg-slate-950 p-2">
+          <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {queuedImages.map((item, index) => (
+              {queuedImages.map((item) => {
+                const pageNumber = queuedImages.findIndex((queuedItem) => queuedItem.id === item.id) + 1;
+
+                return (
                 <div
                   key={item.id}
-                  className={`flex min-w-[220px] items-center gap-3 rounded-2xl border p-2 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
+                  className={`flex min-w-0 items-center gap-3 border p-2 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
                 >
                   <button
                     type="button"
@@ -765,13 +768,13 @@ export default function MobilePage() {
                   >
                     <img
                       src={item.previewUrl}
-                      alt={`Queued page ${index + 1}`}
-                      className="h-[60px] w-[40px] rounded-xl object-cover"
+                      alt={`Queued page ${pageNumber}`}
+                      className="h-[60px] w-[40px] object-cover"
                     />
                   </button>
 
                   <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                    <p className="text-[11px] font-semibold text-slate-100">{index + 1}</p>
+                    <p className="text-[11px] font-semibold text-slate-100">{pageNumber}</p>
                     <button
                       type="button"
                       onClick={(event) => {
@@ -779,23 +782,14 @@ export default function MobilePage() {
                         handleDelete(item.id);
                       }}
                       className="rounded-full bg-red-600 p-1.5 text-white"
-                      aria-label={`Delete page ${index + 1}`}
+                      aria-label={`Delete page ${pageNumber}`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="mb-2 flex justify-end">
-              <button
-                type="button"
-                onClick={handleScanNext}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-600 text-white shadow-lg"
-                aria-label="Capture next page"
-              >
-                <Camera className="h-5 w-5" />
-              </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -804,6 +798,17 @@ export default function MobilePage() {
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
           <div className="grid grid-cols-4 gap-2">
+            <div className="mb-2 flex justify-end">
+              <button
+                type="button"
+                onClick={handleScanNext}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-600 text-white shadow-lg"
+                aria-label="Capture next page"
+              >
+                <Camera className="h-5 w-5" />
+                <div className="mt-1 text-[10px]">Next Page</div>
+              </button>
+            </div>
             <button
               type="button"
               onClick={handleRotatePreview}
