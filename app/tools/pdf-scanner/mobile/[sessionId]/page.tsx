@@ -781,10 +781,10 @@ export default function MobilePage() {
                         event.stopPropagation();
                         handleDelete(item.id);
                       }}
-                      className="rounded-full bg-red-600 p-1.5 text-white"
+                      className="rounded-full bg-red-600 p-1 text-white"
                       aria-label={`Delete page ${pageNumber}`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-2.5 w-2.5" />
                     </button>
                   </div>
                 </div>
@@ -798,17 +798,15 @@ export default function MobilePage() {
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
           <div className="grid grid-cols-5 gap-2">
-            <div className="mb-2 flex justify-end">
-              <button
-                type="button"
-                onClick={handleScanNext}
-                className="rounded-xl py-2 bg-sky-600 text-white"
-                aria-label="Capture next page"
-              >
-                <Camera className="h-5 w-5" />
-                <div className="mt-1 text-[10px]">Scan Next</div>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleScanNext}
+              className="rounded-xl py-2 bg-sky-600 text-white"
+              aria-label="Capture next page"
+            >
+              <Camera className="mx-auto h-4 w-4" />
+              <div className="mt-1 text-[10px]">Scan Next</div>
+            </button>
             <button
               type="button"
               onClick={handleRotatePreview}
