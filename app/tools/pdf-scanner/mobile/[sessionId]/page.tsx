@@ -483,14 +483,16 @@ export default function MobilePage() {
     openFileInput(cameraInputRef);
   };
 
-  const handleScanNext = async () => {
+  const handleScanNext = () => {
     const currentItem = queuedImagesRef.current.find((item) => item.id === activeImageId);
 
     if (currentItem) {
-      await finalizeQueuedImage(currentItem.id, currentItem);
-      setStatus("Crop selection applied. Capture the next page.");
+      void finalizeQueuedImage(currentItem.id, currentItem).then(() => {
+        setStatus("Crop selection applied. Capture the next page.");
+      });
     }
 
+    setActiveCornerIndex(null);
     openFileInput(cameraInputRef);
   };
 
@@ -525,7 +527,7 @@ export default function MobilePage() {
     setActiveCornerIndex(null);
 
     window.setTimeout(() => {
-      cameraInputRef.current?.click();
+      openFileInput(cameraInputRef);
     }, 120);
   };
 
@@ -771,21 +773,21 @@ export default function MobilePage() {
                 </div>
               ))}
             </div>
+            <div className="mb-2">
+              <button
+                type="button"
+                onClick={handleScanNext}
+                className="flex items-center justify-center rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
+              >
+                Scan Next
+              </button>
+            </div>
           </div>
         )}
 
         {/* BOTTOM ACTIONS */}
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
-          <div className="mb-2">
-            <button
-              type="button"
-              onClick={handleScanNext}
-              className="flex items-center justify-center rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
-            >
-              Scan Next
-            </button>
-          </div>
           <div className="grid grid-cols-4 gap-2">
             <button
               type="button"
