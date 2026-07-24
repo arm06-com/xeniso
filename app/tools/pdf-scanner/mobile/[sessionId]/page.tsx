@@ -150,6 +150,7 @@ export default function MobilePage() {
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
   const [draftImage, setDraftImage] = useState<QueuedImage | null>(null);
   const queuedImagesRef = useRef<QueuedImage[]>([]);
+  const latestPreviewStateRef = useRef<{ corners: Point[]; rotation: number } | null>(null);
 
   useEffect(() => {
     queuedImagesRef.current = queuedImages;
@@ -199,13 +200,20 @@ export default function MobilePage() {
     const y = clamp((clientY - rect.top) / rect.height, 0, 1);
 
     if (draftImage) {
+      const nextCorners = draftImage.manualCorners.map((point, index) =>
+        index === activeCornerIndex ? { x, y } : point
+      );
+
+      latestPreviewStateRef.current = {
+        corners: nextCorners,
+        rotation: draftImage.rotation,
+      };
+
       setDraftImage((prev) =>
         prev
           ? {
               ...prev,
-              manualCorners: prev.manualCorners.map((point, index) =>
-                index === activeCornerIndex ? { x, y } : point
-              ),
+              manualCorners: nextCorners,
             }
           : prev
       );
@@ -216,6 +224,16 @@ export default function MobilePage() {
       return;
     }
 
+    const currentItem = queuedImages.find((item) => item.id === activeImageId);
+    const nextCorners = (currentItem?.manualCorners ?? createDefaultManualCorners()).map((point, index) =>
+      index === activeCornerIndex ? { x, y } : point
+    );
+
+    latestPreviewStateRef.current = {
+      corners: nextCorners,
+      rotation: currentItem?.rotation ?? 0,
+    };
+
     setQueuedImages((prev) =>
       prev.map((item) => {
         if (item.id !== activeImageId) {
@@ -224,9 +242,7 @@ export default function MobilePage() {
 
         return {
           ...item,
-          manualCorners: item.manualCorners.map((point, index) =>
-            index === activeCornerIndex ? { x, y } : point
-          ),
+          manualCorners: nextCorners,
         };
       })
     );
@@ -352,7 +368,7 @@ export default function MobilePage() {
   const handlePreviewPointerUp = () => {
     setActiveCornerIndex(null);
 
-    if (!activeImageId || !previewImage) {
+    if (!activeImageId || !previewImage || !latestPreviewStateRef.current) {
       return;
     }
 
@@ -365,8 +381,8 @@ export default function MobilePage() {
     void rebuildQueuedImagePreview(
       currentItem.id,
       currentItem.sourceFile,
-      currentItem.manualCorners.map((point) => ({ ...point })),
-      currentItem.rotation,
+      latestPreviewStateRef.current.corners.map((point) => ({ ...point })),
+      latestPreviewStateRef.current.rotation,
       currentItem.previewUrl
     );
   };
@@ -446,7 +462,9 @@ export default function MobilePage() {
       // fall back to click
     }
 
-    input.click();
+    window.setTimeout(() => {
+      input.click();
+    }, 50);
   };
 
   const handleCameraClick = () => {
@@ -611,7 +629,7 @@ export default function MobilePage() {
 
       <div className="flex h-full min-h-0 flex-col">
         {/* IMAGE AREA */}
-        <div className="relative flex-1 min-h-0 overflow-hidden bg-slate-900 p-2">
+        <div className="relative flex-1 min-h-0 overflow-hidden bg-slate-900 p-1.5">
 
 
           <div
@@ -686,51 +704,50 @@ export default function MobilePage() {
 
 
         {queuedImages.length > 0 && (
-          <div className="shrink-0 border-t border-white/10 bg-slate-950 p-3">
-            <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
+            <div className="mb-2 flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-400">Pages ready</p>
-                <p className="mt-1 text-sm text-slate-300">
-                  {queuedImages.length} page{queuedImages.length === 1 ? "" : "s"} queued for upload.
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-400">Pages ready</p>
+                <p className="mt-0.5 text-xs text-slate-300">
+                  {queuedImages.length} page{queuedImages.length === 1 ? "" : "s"} queued.
                 </p>
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {queuedImages.map((item, index) => (
-                <button
+                <div
                   key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setDraftImage(null);
-                    setActiveImageId(item.id);
-                  }}
-                  className={`border p-3 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
+                  className={`min-w-[88px] rounded-2xl border p-2 text-left transition ${activeImageId === item.id ? "border-sky-400 bg-slate-800" : "border-slate-700 bg-slate-900"}`}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-100">Page {index + 1}</p>
-                      <p className="text-xs text-slate-400">Tap to review</p>
-                    </div>
-                    <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-                      {index + 1}
-                    </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold text-slate-100">Page {index + 1}</p>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDelete(item.id);
+                      }}
+                      className="rounded-full bg-red-600 p-1.5 text-white"
+                      aria-label={`Delete page ${index + 1}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <img
-                    src={item.previewUrl}
-                    alt={`Queued page ${index + 1}`}
-                    className="mt-3 h-[60px] w-[40px] rounded-2xl object-cover"
-                  />
                   <button
                     type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleDelete(item.id);
+                    onClick={() => {
+                      setDraftImage(null);
+                      setActiveImageId(item.id);
                     }}
-                    className="mt-3 inline-flex rounded-full bg-red-600 px-3 py-1.5 text-xs font-medium text-white"
+                    className="mt-2 block"
                   >
-                    Remove page
+                    <img
+                      src={item.previewUrl}
+                      alt={`Queued page ${index + 1}`}
+                      className="h-[60px] w-[40px] rounded-xl object-cover"
+                    />
                   </button>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -762,24 +779,24 @@ export default function MobilePage() {
               onClick={handleRotatePreview}
               className="rounded-xl bg-slate-700 py-2 text-white"
             >
-              <RotateCw className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">Rotate</div>
+              <RotateCw className="mx-auto h-4 w-4" />
+              <div className="mt-1 text-[10px]">Rotate</div>
             </button>
             <button
               type="button"
               onClick={handleRetryCapture}
               className="rounded-xl bg-orange-600 py-2 text-white"
             >
-              <Camera className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">Retake</div>
+              <Camera className="mx-auto h-4 w-4" />
+              <div className="mt-1 text-[10px]">Retake</div>
             </button>
             <button
               type="button"
               onClick={handleDeletePreview}
               className="rounded-xl bg-red-600 py-2 text-white"
             >
-              <Trash2 className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">Delete</div>
+              <Trash2 className="mx-auto h-4 w-4" />
+              <div className="mt-1 text-[10px]">Delete</div>
             </button>
             <button
               type="button"
@@ -787,8 +804,8 @@ export default function MobilePage() {
               disabled={queuedImages.length === 0 || isUploading}
               className="rounded-xl bg-green-600 py-2 text-white disabled:opacity-50"
             >
-              <Upload className="mx-auto h-5 w-5" />
-              <div className="mt-1 text-xs">Submit all</div>
+              <Upload className="mx-auto h-4 w-4" />
+              <div className="mt-1 text-[10px]">Submit</div>
             </button>
           </div>
         </div>
