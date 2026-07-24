@@ -734,7 +734,7 @@ export default function MobilePage() {
 
 
         {queuedImages.length > 0 && (
-          <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
+          <div className="grid grid-cols-2 shrink-0 border-t border-white/10 bg-slate-950 p-2">
             <div className="flex gap-2 overflow-x-auto pb-1">
               {queuedImages.map((item, index) => (
                 <div
@@ -773,13 +773,14 @@ export default function MobilePage() {
                 </div>
               ))}
             </div>
-            <div className="mb-2">
+            <div className="mb-2 flex justify-end">
               <button
                 type="button"
                 onClick={handleScanNext}
-                className="flex items-center justify-center rounded-xl bg-sky-600 px-3 py-2 text-center text-sm font-semibold text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-600 text-white shadow-lg"
+                aria-label="Capture next page"
               >
-                Scan Next
+                <Camera className="h-5 w-5" />
               </button>
             </div>
           </div>
