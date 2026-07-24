@@ -136,6 +136,13 @@ const createCroppedFile = async (file: File, points: Point[], rotation = 0) => {
   });
 };
 
+const createCompressedPreviewFile = async (file: File) =>
+  imageCompression(file, {
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1600,
+    useWebWorker: true,
+  });
+
 export default function MobilePage() {
   const params = useParams();
   const sessionId = params.sessionId as string | undefined;
@@ -236,13 +243,7 @@ export default function MobilePage() {
 
   const createQueuedImageFromFile = async (file: File, points: Point[] = createDefaultManualCorners(), rotation = 0) => {
     const resolvedPoints = points.length === 4 ? points : createDefaultManualCorners();
-    const preparedFile = await createCroppedFile(file, resolvedPoints, rotation);
-    const compressed = await imageCompression(preparedFile, {
-      maxSizeMB: 0.5,
-      maxWidthOrHeight: 1600,
-      useWebWorker: true,
-    });
-
+    const compressed = await createCompressedPreviewFile(file);
     const previewUrl = URL.createObjectURL(compressed);
     const nextId = crypto.randomUUID();
 
@@ -256,46 +257,38 @@ export default function MobilePage() {
     } satisfies QueuedImage;
   };
 
-  const rebuildQueuedImagePreview = async (
-    imageId: string,
-    sourceFile: File,
-    nextCorners: Point[],
-    nextRotation: number,
-    previousPreviewUrl?: string
-  ) => {
-    if (previousPreviewUrl) {
-      URL.revokeObjectURL(previousPreviewUrl);
+  const finalizeQueuedImage = async (imageId: string, item: QueuedImage) => {
+    if (item.previewUrl) {
+      URL.revokeObjectURL(item.previewUrl);
     }
 
-    const preparedFile = await createCroppedFile(sourceFile, nextCorners, nextRotation);
-    const compressed = await imageCompression(preparedFile, {
-      maxSizeMB: 0.5,
-      maxWidthOrHeight: 1600,
-      useWebWorker: true,
-    });
-
+    const preparedFile = await createCroppedFile(item.sourceFile, item.manualCorners, item.rotation);
+    const compressed = await createCompressedPreviewFile(preparedFile);
     const previewUrl = URL.createObjectURL(compressed);
 
-    setQueuedImages((prev) =>
-      prev.map((item) => {
-        if (item.id !== imageId) {
-          return item;
-        }
+    const nextQueue = queuedImagesRef.current.map((queuedItem) => {
+      if (queuedItem.id !== imageId) {
+        return queuedItem;
+      }
 
-        return {
-          ...item,
-          file: compressed,
-          previewUrl,
-          manualCorners: nextCorners.map((point) => ({ ...point })),
-          rotation: nextRotation,
-        };
-      })
-    );
+      return {
+        ...queuedItem,
+        file: compressed,
+        previewUrl,
+        manualCorners: queuedItem.manualCorners.map((point) => ({ ...point })),
+        rotation: queuedItem.rotation,
+      };
+    });
+
+    queuedImagesRef.current = nextQueue;
+    setQueuedImages(nextQueue);
   };
 
   const addImageToQueue = async (file: File, points: Point[] = createDefaultManualCorners(), rotation = 0) => {
     const queuedItem = await createQueuedImageFromFile(file, points, rotation);
-    setQueuedImages((prev) => [...prev, queuedItem]);
+    const nextQueue = [...queuedImagesRef.current, queuedItem];
+    queuedImagesRef.current = nextQueue;
+    setQueuedImages(nextQueue);
     setActiveImageId(queuedItem.id);
     setStatus("Page added to queue. Capture another page or submit all pages.");
   };
@@ -385,19 +378,31 @@ export default function MobilePage() {
       return;
     }
 
-    const currentItem = queuedImages.find((item) => item.id === activeImageId);
+    const currentItem = queuedImagesRef.current.find((item) => item.id === activeImageId);
 
     if (!currentItem) {
       return;
     }
 
-    void rebuildQueuedImagePreview(
-      currentItem.id,
-      currentItem.sourceFile,
-      latestPreviewStateRef.current.corners.map((point) => ({ ...point })),
-      latestPreviewStateRef.current.rotation,
-      currentItem.previewUrl
-    );
+    const nextCorners = latestPreviewStateRef.current.corners.map((point) => ({ ...point }));
+
+    const previewState = latestPreviewStateRef.current;
+
+    const nextQueue = queuedImagesRef.current.map((item) => {
+      if (item.id !== currentItem.id) {
+        return item;
+      }
+
+      return {
+        ...item,
+        manualCorners: nextCorners,
+        rotation: previewState?.rotation ?? item.rotation,
+      };
+    });
+
+    queuedImagesRef.current = nextQueue;
+    setQueuedImages(nextQueue);
+    latestPreviewStateRef.current = null;
   };
 
   const handleRotatePreview = () => {
@@ -410,25 +415,19 @@ export default function MobilePage() {
       return;
     }
 
-    const currentItem = queuedImages.find((item) => item.id === activeImageId);
+    const currentItem = queuedImagesRef.current.find((item) => item.id === activeImageId);
 
     if (!currentItem) {
       return;
     }
 
     const nextRotation = (currentItem.rotation + 90) % 360;
-
-    setQueuedImages((prev) =>
-      prev.map((item) => (item.id === activeImageId ? { ...item, rotation: nextRotation } : item))
+    const nextQueue = queuedImagesRef.current.map((item) =>
+      item.id === activeImageId ? { ...item, rotation: nextRotation } : item
     );
 
-    void rebuildQueuedImagePreview(
-      currentItem.id,
-      currentItem.sourceFile,
-      currentItem.manualCorners.map((point) => ({ ...point })),
-      nextRotation,
-      currentItem.previewUrl
-    );
+    queuedImagesRef.current = nextQueue;
+    setQueuedImages(nextQueue);
   };
 
   const prepareDraftImage = async (file: File) => {
@@ -484,7 +483,14 @@ export default function MobilePage() {
     openFileInput(cameraInputRef);
   };
 
-  const handleScanNext = () => {
+  const handleScanNext = async () => {
+    const currentItem = queuedImagesRef.current.find((item) => item.id === activeImageId);
+
+    if (currentItem) {
+      await finalizeQueuedImage(currentItem.id, currentItem);
+      setStatus("Crop selection applied. Capture the next page.");
+    }
+
     openFileInput(cameraInputRef);
   };
 
@@ -493,23 +499,21 @@ export default function MobilePage() {
   };
 
   const handleDelete = (imageId: string) => {
-    setQueuedImages((prev) => {
-      const targetItem = prev.find((item) => item.id === imageId);
+    const nextImages = queuedImagesRef.current.filter((item) => item.id !== imageId);
+    const targetItem = queuedImagesRef.current.find((item) => item.id === imageId);
 
-      if (targetItem?.previewUrl) {
-        URL.revokeObjectURL(targetItem.previewUrl);
-      }
+    if (targetItem?.previewUrl) {
+      URL.revokeObjectURL(targetItem.previewUrl);
+    }
 
-      const nextImages = prev.filter((item) => item.id !== imageId);
+    queuedImagesRef.current = nextImages;
+    setQueuedImages(nextImages);
 
-      if (nextImages.length === 0) {
-        setActiveImageId(null);
-      } else if (activeImageId === imageId) {
-        setActiveImageId(nextImages[0].id);
-      }
-
-      return nextImages;
-    });
+    if (nextImages.length === 0) {
+      setActiveImageId(null);
+    } else if (activeImageId === imageId) {
+      setActiveImageId(nextImages[0].id);
+    }
   };
 
   const handleRetryCapture = () => {
@@ -545,20 +549,26 @@ export default function MobilePage() {
   };
 
   const handleSubmitAll = async () => {
-    if (queuedImages.length === 0) {
+    if (queuedImagesRef.current.length === 0) {
       return;
     }
 
     setIsUploading(true);
-    setStatus("Uploading all pages to desktop...");
+    setStatus("Applying crop selections and uploading all pages...");
 
     if (isStandaloneMode) {
       setIsUploading(false);
-      setStatus(`Captured ${queuedImages.length} page${queuedImages.length === 1 ? "" : "s"}. Submit is not required in local mode.`);
+      setStatus(`Captured ${queuedImagesRef.current.length} page${queuedImagesRef.current.length === 1 ? "" : "s"}. Submit is not required in local mode.`);
       return;
     }
 
-    for (const item of queuedImages) {
+    const itemsToSubmit = queuedImagesRef.current.map((item) => ({ ...item }));
+
+    for (const item of itemsToSubmit) {
+      await finalizeQueuedImage(item.id, item);
+    }
+
+    for (const item of queuedImagesRef.current) {
       const uploaded = await uploadImage(item.file);
       if (!uploaded) {
         setIsUploading(false);
@@ -567,6 +577,7 @@ export default function MobilePage() {
       }
     }
 
+    queuedImagesRef.current = [];
     setQueuedImages([]);
     setActiveImageId(null);
     setIsUploading(false);
@@ -722,14 +733,6 @@ export default function MobilePage() {
 
         {queuedImages.length > 0 && (
           <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-400">Pages ready</p>
-                <p className="mt-0.5 text-xs text-slate-300">
-                  {queuedImages.length} page{queuedImages.length === 1 ? "" : "s"} queued.
-                </p>
-              </div>
-            </div>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {queuedImages.map((item, index) => (
                 <div
