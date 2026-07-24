@@ -13,6 +13,7 @@ type Point = {
 type QueuedImage = {
   id: string;
   file: File;
+  sourceFile: File;
   previewUrl: string;
   manualCorners: Point[];
   rotation: number;
@@ -246,6 +247,7 @@ export default function MobilePage() {
     return {
       id: nextId,
       file: compressed,
+      sourceFile: file,
       previewUrl,
       manualCorners: resolvedPoints.map((point) => ({ ...point })),
       rotation,
@@ -335,6 +337,7 @@ export default function MobilePage() {
     setDraftImage({
       id: crypto.randomUUID(),
       file,
+      sourceFile: file,
       previewUrl,
       manualCorners: createDefaultManualCorners(),
       rotation: 0,
@@ -356,16 +359,35 @@ export default function MobilePage() {
     event.target.value = "";
   };
 
+  const openFileInput = (inputRef: React.MutableRefObject<HTMLInputElement | null>) => {
+    const input = inputRef.current;
+
+    if (!input) {
+      return;
+    }
+
+    try {
+      if (typeof input.showPicker === "function") {
+        input.showPicker();
+        return;
+      }
+    } catch {
+      // Fall back to click below.
+    }
+
+    input.click();
+  };
+
   const handleCameraClick = () => {
-    cameraInputRef.current?.click();
+    openFileInput(cameraInputRef);
   };
 
   const handleScanNext = () => {
-    cameraInputRef.current?.click();
+    openFileInput(cameraInputRef);
   };
 
   const handleGalleryClick = () => {
-    galleryInputRef.current?.click();
+    openFileInput(galleryInputRef);
   };
 
   const handleDelete = (imageId: string) => {
@@ -435,7 +457,8 @@ export default function MobilePage() {
     }
 
     for (const item of queuedImages) {
-      const uploaded = await uploadImage(item.file);
+      const preparedFile = await createCroppedFile(item.sourceFile, item.manualCorners, item.rotation);
+      const uploaded = await uploadImage(preparedFile);
       if (!uploaded) {
         setIsUploading(false);
         setStatus("Upload failed. Please retry submitting all pages.");
@@ -481,7 +504,7 @@ export default function MobilePage() {
             ref={galleryInputRef}
             type="file"
             accept="image/*"
-            className="hidden"
+            className="sr-only"
             onChange={handleImageCapture}
           />
           {/* Camera */}
@@ -499,7 +522,7 @@ export default function MobilePage() {
             type="file"
             accept="image/*"
             capture="environment"
-            className="hidden"
+            className="sr-only"
             onChange={handleImageCapture}
           />
 
@@ -650,7 +673,7 @@ export default function MobilePage() {
                   <img
                     src={item.previewUrl}
                     alt={`Queued page ${index + 1}`}
-                    className="mt-3 h-28 w-full rounded-2xl object-cover"
+                    className="mt-3 h-[60px] w-[40px] rounded-2xl object-cover"
                   />
                   <button
                     type="button"
@@ -671,13 +694,21 @@ export default function MobilePage() {
         {/* BOTTOM ACTIONS */}
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
-          <div className="mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <button
               type="button"
               onClick={handleScanNext}
-              className="w-full rounded-xl bg-sky-600 py-2.5 text-sm font-semibold text-white"
+              className="flex-1 rounded-xl bg-sky-600 px-3 py-2 text-sm font-semibold text-white"
             >
               Scan Next
+            </button>
+            <button
+              type="button"
+              onClick={handleGalleryClick}
+              className="rounded-xl border border-white/20 bg-slate-800 px-3 py-2 text-white"
+              aria-label="Choose from gallery"
+            >
+              <Images className="h-4 w-4" />
             </button>
           </div>
           <div className="grid grid-cols-4 gap-2">
