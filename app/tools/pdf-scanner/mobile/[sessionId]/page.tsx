@@ -617,7 +617,7 @@ export default function MobilePage() {
   }, [previewImage?.id, previewImage?.manualCorners]);
 
   return (
-  <div className="min-h-screen flex flex-col bg-slate-950 text-white overflow-x-hidden">
+  <div className="min-h-screen flex flex-col bg-slate-950 text-white overflow-x-hidden pt-16">
     <input
       id={cameraInputId}
       ref={cameraInputRef}
