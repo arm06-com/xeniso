@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PDFDocument } from "pdf-lib";
+import { MoveDiagonal, Hand, RotateCw, Trash2 } from "lucide-react";
 
 import {
   DndContext,
@@ -24,18 +25,28 @@ export default function MergePdf() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isDragging, setIsDragging] = useState(false);
+  type UploadedFile = {
+    id: string;
+    file: File;
+    thumbnail: string;
+    pageCount: number;
+  };
+
   type PdfPage = {
     id: string;
     preview: string;
-    sourceFileIndex: number;
+    sourceFileId: string;
     sourcePageIndex: number;
     pageLabel: string;
+    rotation: number;
   };
-  const [files, setFiles] = useState<File[]>([]);
+
+  const [files, setFiles] = useState<UploadedFile[]>([]);
   const [pages, setPages] = useState<PdfPage[]>([]);
   const [mergedPdfUrl, setMergedPdfUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [expandedFileIds, setExpandedFileIds] = useState<string[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -90,12 +101,11 @@ export default function MergePdf() {
       return;
     }
 
-    setFiles(pdfFiles);
-
     try {
       const pdfjsLib = await loadPdfJs();
 
       const allPages: PdfPage[] = [];
+      const uploadedPdfFiles: UploadedFile[] = [];
 
       for (
         let fileIndex = 0;
@@ -103,12 +113,14 @@ export default function MergePdf() {
         fileIndex++
       ) {
         const file = pdfFiles[fileIndex];
-
+        const fileId = crypto.randomUUID();
         const buffer = await file.arrayBuffer();
 
         const pdf = await pdfjsLib.getDocument({
           data: buffer,
         }).promise;
+
+        let fileThumbnail = "";
 
         for (
           let pageIndex = 1;
@@ -121,11 +133,8 @@ export default function MergePdf() {
             scale: 0.6,
           });
 
-          const canvas =
-            document.createElement("canvas");
-
-          const context =
-            canvas.getContext("2d");
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
 
           if (!context) continue;
 
@@ -137,16 +146,31 @@ export default function MergePdf() {
             viewport,
           }).promise;
 
+          const preview = canvas.toDataURL("image/png");
+
+          if (pageIndex === 1) {
+            fileThumbnail = preview;
+          }
+
           allPages.push({
             id: crypto.randomUUID(),
-            preview: canvas.toDataURL("image/png"),
-            sourceFileIndex: fileIndex,
+            preview,
+            sourceFileId: fileId,
             sourcePageIndex: pageIndex - 1,
-            pageLabel: `${file.name} - Page ${pageIndex}`,
+            pageLabel: `Page ${pageIndex}`,
+            rotation: 0,
           });
         }
+
+        uploadedPdfFiles.push({
+          id: fileId,
+          file,
+          thumbnail: fileThumbnail,
+          pageCount: pdf.numPages,
+        });
       }
 
+      setFiles(uploadedPdfFiles);
       setPages(allPages);
     } catch (error) {
       console.error(error);
@@ -159,6 +183,113 @@ export default function MergePdf() {
       prev.filter((page) => page.id !== id)
     );
   };
+
+  const handleDeleteFile = (fileId: string) => {
+    const fileIndex = files.findIndex((file) => file.id === fileId);
+    if (fileIndex === -1) return;
+
+    setFiles((prevFiles) =>
+      prevFiles.filter((file) => file.id !== fileId)
+    );
+
+    setPages((prevPages) =>
+      prevPages.filter(
+        (page) => page.sourceFileId !== fileId
+      )
+    );
+
+    setExpandedFileIds((prev) =>
+      prev.filter((id) => id !== fileId)
+    );
+  };
+
+  const handleFileDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    setFiles((prevFiles) => {
+      const oldIndex = prevFiles.findIndex(
+        (file) => file.id === active.id
+      );
+      const newIndex = prevFiles.findIndex(
+        (file) => file.id === over.id
+      );
+
+      if (oldIndex === -1 || newIndex === -1) return prevFiles;
+
+      return arrayMove(prevFiles, oldIndex, newIndex);
+    });
+  };
+
+  const handlePageDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    setPages((items) => {
+      const oldIndex = items.findIndex(
+        (page) => page.id === active.id
+      );
+      const newIndex = items.findIndex(
+        (page) => page.id === over.id
+      );
+
+      if (oldIndex === -1 || newIndex === -1) return items;
+
+      return arrayMove(items, oldIndex, newIndex);
+    });
+  };
+
+  const rotatePage = (pageId: string) => {
+    setPages((prev) =>
+      prev.map((page) =>
+        page.id === pageId
+          ? {
+              ...page,
+              rotation: (page.rotation + 90) % 360,
+            }
+          : page
+      )
+    );
+  };
+
+  const moveFilePage = (
+    pageId: string,
+    direction: "up" | "down"
+  ) => {
+    const currentIndex = pages.findIndex(
+      (page) => page.id === pageId
+    );
+    if (currentIndex === -1) return;
+
+    const nextIndex =
+      direction === "up"
+        ? currentIndex - 1
+        : currentIndex + 1;
+    if (nextIndex < 0 || nextIndex >= pages.length) return;
+
+    setPages((prev) => {
+      const nextPages = [...prev];
+      [nextPages[currentIndex], nextPages[nextIndex]] = [
+        nextPages[nextIndex],
+        nextPages[currentIndex],
+      ];
+      return nextPages;
+    });
+  };
+
+  const toggleFileExpand = (fileId: string) => {
+    setExpandedFileIds((prev) =>
+      prev.includes(fileId)
+        ? prev.filter((id) => id !== fileId)
+        : [...prev, fileId]
+    );
+  };
+
+  const expandedPages = pages.filter((page) =>
+    expandedFileIds.includes(page.sourceFileId)
+  );
 
   const mergePdf = async () => {
     if (!pages.length) {
@@ -178,17 +309,21 @@ export default function MergePdf() {
 
       const loadedPdfs = await Promise.all(
         files.map(async (file) => ({
+          fileId: file.id,
           pdf: await PDFDocument.load(
-            await file.arrayBuffer()
+            await file.file.arrayBuffer()
           ),
         }))
       );
 
+      const loadedPdfMap = new Map(
+        loadedPdfs.map((item) => [item.fileId, item.pdf])
+      );
+
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i];
-
-        const sourcePdf =
-          loadedPdfs[page.sourceFileIndex].pdf;
+        const sourcePdf = loadedPdfMap.get(page.sourceFileId);
+        if (!sourcePdf) continue;
 
         const [copiedPage] =
           await mergedPdf.copyPages(sourcePdf, [
@@ -222,23 +357,78 @@ export default function MergePdf() {
     setIsProcessing(false);
   };
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
+  function SortableFileCard({
+    file,
+    index,
+    onDelete,
+    onExpand,
+  }: any) {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+    } = useSortable({ id: file.id });
 
-    if (!over || active.id === over.id) return;
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
 
-    setPages((items) => {
-      const oldIndex = items.findIndex(
-        (i) => i.id === active.id
-      );
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="relative rounded-2xl overflow-hidden bg-white shadow-sm"
+      >
+        <div className="group relative">
+          <img
+            src={file.thumbnail}
+            alt="PDF thumbnail"
+            className="w-full h-44 object-cover"
+          />
 
-      const newIndex = items.findIndex(
-        (i) => i.id === over.id
-      );
+          <div className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/20" />
 
-      return arrayMove(items, oldIndex, newIndex);
-    });
-  };
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-2 opacity-0 group-hover:opacity-100 transition">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onExpand(file.id);
+              }}
+              className="rounded-full bg-white/90 p-2 text-slate-900 shadow"
+            >
+              <MoveDiagonal className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(file.id);
+              }}
+              className="rounded-full bg-red-600 p-2 text-white shadow"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div
+            {...attributes}
+            {...listeners}
+            className="absolute top-2 left-2 flex h-9 w-9 cursor-grab items-center justify-center rounded-full bg-white/90 text-slate-900 shadow"
+          >
+            <Hand className="h-4 w-4" />
+          </div>
+
+          <div className="absolute top-2 right-2 rounded-full bg-slate-900/80 px-2 py-1 text-xs text-white">
+            {file.pageCount} pages
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   function SortablePage({
     page,
@@ -357,56 +547,65 @@ export default function MergePdf() {
             Uploaded Files ({files.length})
           </h2>
 
-          <div className="space-y-2">
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="border rounded-lg p-3 text-sm text-gray-700"
-              >
-                <div className="font-medium">
-                  {file.name}
-                </div>
-
-                <div className="text-gray-500">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {pages.length > 0 && (
-        <section className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm">
-          <h2 className="text-xl font-bold mb-6">
-            PDF Pages (Drag to Reorder) ({pages.length})
-          </h2>
-
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+            onDragEnd={handleFileDragEnd}
           >
             <SortableContext
-              items={pages.map((p) => p.id)}
+              items={files.map((file) => file.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4">
-                {pages.map((page, index) => (
-                  <SortablePage
-                    key={page.id}
-                    page={page}
-                    index={index}
-                    removePage={removePage}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {files.map((file) => (
+                  <SortableFileCard
+                    key={file.id}
+                    file={file}
+                    onDelete={handleDeleteFile}
+                    onExpand={toggleFileExpand}
                   />
                 ))}
               </div>
             </SortableContext>
           </DndContext>
+
+          {expandedFileIds.length > 0 && (
+            <div className="mt-6 border-t pt-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    Expanded pages
+                  </h3>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handlePageDragEnd}
+                >
+                  <SortableContext
+                    items={expandedPages.map((page) => page.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {expandedPages.map((page, index) => (
+                        <SortablePage
+                          key={page.id}
+                          page={page}
+                          index={index}
+                          removePage={removePage}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
+            </div>
+          )}
         </section>
       )}
-
-      {/* Merge UI */}
       {pages.length > 0 && (
         <section className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm">
           <button

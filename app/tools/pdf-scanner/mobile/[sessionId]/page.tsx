@@ -757,7 +757,7 @@ export default function MobilePage() {
 
 
         {queuedImages.length > 0 && (
-          <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
+          <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2 mt-5">
             <div className="flex gap-2 overflow-x-auto pb-1">
               {queuedImages.map((item) => {
                 const pageNumber = queuedImages.findIndex((queuedItem) => queuedItem.id === item.id) + 1;
