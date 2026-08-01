@@ -154,7 +154,7 @@ export default function MobilePage() {
   const cameraInputId = "mobile-camera-input";
   const galleryInputId = "mobile-gallery-input";
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
-  const previewImageRef = useRef<HTMLImageElement | null>(null);
+  const previewImageWrapperRef = useRef<HTMLDivElement | null>(null);
   const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
@@ -207,7 +207,7 @@ export default function MobilePage() {
       return;
     }
 
-    const rect = previewImageRef.current?.getBoundingClientRect() ?? previewContainerRef.current?.getBoundingClientRect();
+    const rect = previewImageWrapperRef.current?.getBoundingClientRect() ?? previewContainerRef.current?.getBoundingClientRect();
     if (!rect) {
       return;
     }
@@ -690,14 +690,17 @@ export default function MobilePage() {
             onPointerCancel={handlePreviewPointerUp}
             style={{touchAction:"none"}}
           >
-            <div className="relative inline-block">
+            <div
+              ref={previewImageWrapperRef}
+              className="relative inline-block"
+              style={{
+                transform: `rotate(${previewImage.rotation}deg)`,
+                transformOrigin: "center center",
+              }}
+            >
               <img
-                ref={previewImageRef}
                 src={previewImage.previewUrl}
-                className="max-h-full max-w-full object-contain rounded-xl"
-                style={{
-                  transform:`rotate(${previewImage.rotation}deg)`
-                }}
+                className="block max-h-full max-w-full object-contain rounded-xl"
               />
               <svg className="absolute inset-0 w-full h-full pointer-events-none">
               <polygon
@@ -770,7 +773,7 @@ export default function MobilePage() {
                       setDraftImage(null);
                       setActiveImageId(item.id);
                     }}
-                    className="flex-shrink-0"
+                    className="shrink-0"
                   >
                     <img
                       src={item.previewUrl}
