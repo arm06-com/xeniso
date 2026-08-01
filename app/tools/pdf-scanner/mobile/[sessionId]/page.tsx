@@ -154,6 +154,7 @@ export default function MobilePage() {
   const cameraInputId = "mobile-camera-input";
   const galleryInputId = "mobile-gallery-input";
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
+  const previewImageRef = useRef<HTMLImageElement | null>(null);
   const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
   const [activeImageId, setActiveImageId] = useState<string | null>(null);
   const [activeCornerIndex, setActiveCornerIndex] = useState<number | null>(null);
@@ -202,11 +203,15 @@ export default function MobilePage() {
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
   const updateActiveCorner = (clientX: number, clientY: number) => {
-    if (activeCornerIndex === null || !previewContainerRef.current) {
+    if (activeCornerIndex === null) {
       return;
     }
 
-    const rect = previewContainerRef.current.getBoundingClientRect();
+    const rect = previewImageRef.current?.getBoundingClientRect() ?? previewContainerRef.current?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+
     const x = clamp((clientX - rect.left) / rect.width, 0, 1);
     const y = clamp((clientY - rect.top) / rect.height, 0, 1);
 
@@ -685,16 +690,16 @@ export default function MobilePage() {
             onPointerCancel={handlePreviewPointerUp}
             style={{touchAction:"none"}}
           >
-
-
-            <img
-              src={previewImage.previewUrl}
-              className="max-h-full max-w-full object-contain rounded-xl"
-              style={{
-                transform:`rotate(${previewImage.rotation}deg)`
-              }}
-            />
-            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+            <div className="relative inline-block">
+              <img
+                ref={previewImageRef}
+                src={previewImage.previewUrl}
+                className="max-h-full max-w-full object-contain rounded-xl"
+                style={{
+                  transform:`rotate(${previewImage.rotation}deg)`
+                }}
+              />
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
               <polygon
                 points={visibleCorners.map((p) => `${p.x * 100}% ${p.y * 100}%`).join(" ")}
                 fill="rgba(56,189,248,.15)"
@@ -745,6 +750,7 @@ export default function MobilePage() {
             ))}
           </div>
         </div>
+      </div>
 
 
         {queuedImages.length > 0 && (
@@ -798,15 +804,7 @@ export default function MobilePage() {
 
         <div className="shrink-0 border-t border-white/10 bg-slate-950 p-2">
           <div className="grid grid-cols-5 gap-2">
-            <button
-              type="button"
-              onClick={handleScanNext}
-              className="rounded-xl py-2 bg-sky-600 text-white"
-              aria-label="Capture next page"
-            >
-              <Camera className="mx-auto h-4 w-4" />
-              <div className="mt-1 text-[10px]">Scan Next</div>
-            </button>
+            
             <button
               type="button"
               onClick={handleRotatePreview}
@@ -830,6 +828,15 @@ export default function MobilePage() {
             >
               <Trash2 className="mx-auto h-4 w-4" />
               <div className="mt-1 text-[10px]">Delete</div>
+            </button>
+            <button
+              type="button"
+              onClick={handleScanNext}
+              className="rounded-xl py-2 bg-sky-600 text-white"
+              aria-label="Capture next page"
+            >
+              <Camera className="mx-auto h-4 w-4" />
+              <div className="mt-1 text-[10px]">Scan Next</div>
             </button>
             <button
               type="button"
