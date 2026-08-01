@@ -680,7 +680,7 @@ export default function MobilePage() {
 
       <div className="flex h-full min-h-0 flex-col">
         {/* IMAGE AREA */}
-        <div className="relative flex-shrink-0 overflow-hidden bg-slate-900 p-1.5">
+        <div className="relative flex-shrink-0 bg-slate-900 p-1.5">
           <div
             ref={previewContainerRef}
             className={`relative flex w-full items-center justify-center ${previewHeightClass}`}
