@@ -82,7 +82,7 @@ export default function Footer() {
 
           </div>
 
-          {/* Product */}
+          {/* Quick Link */}
           <div>
 
             <h3 className="text-white font-semibold mb-5">
@@ -104,6 +104,8 @@ export default function Footer() {
                 <Link
                   href="https://shop.xeniso.com/"
                   className="hover:text-white"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Xeniso Shop
                 </Link>
@@ -174,7 +176,7 @@ export default function Footer() {
           <div>
 
             <h3 className="text-white font-semibold mb-5">
-              Company
+              Legal
             </h3>
 
             <ul className="space-y-3">
