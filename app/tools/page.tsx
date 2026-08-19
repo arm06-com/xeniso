@@ -14,6 +14,12 @@ const toolCategories = [
     title: "PDF Tools",
     tools: [
       {
+        name: "PDF to Excel",
+        description:
+          "Extract structured PDF text into an editable Excel table.",
+        href: "/tools/pdf-to-excel",
+      },
+      {
         name: "PDF Compressor",
         description:
           "Reduce PDF file size while maintaining quality.",

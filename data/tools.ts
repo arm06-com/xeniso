@@ -1,5 +1,10 @@
 export const tools = [
   {
+    name: "PDF to Excel",
+    href: "/tools/pdf-to-excel",
+    category: "PDF",
+  },
+  {
     name: "PDF Compressor",
     href: "/tools/pdf-compressor",
     category: "PDF",
