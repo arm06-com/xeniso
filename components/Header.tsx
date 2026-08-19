@@ -130,8 +130,8 @@ export default function Header() {
             <Image
               src="/xeniso-logo.png"
               alt="Xeniso Logo"
-              width={130}
-              height={40}
+              width={200}
+              height={45}
               priority
               className="w-32.5 sm:w-27.5 lg:w-32.5 h-auto"
             />

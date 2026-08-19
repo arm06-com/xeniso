@@ -30,8 +30,8 @@ export default function Footer() {
               <Image
                   src="/xeniso-white-logo.png"
                   alt="Xeniso Logo"
-                  width={130}
-                  height={40}
+                  width={200}
+                  height={45}
                   priority
                 />
             </Link>
@@ -86,7 +86,7 @@ export default function Footer() {
           <div>
 
             <h3 className="text-white font-semibold mb-5">
-              Product
+              Quick Links
             </h3>
 
             <ul className="space-y-3">
@@ -100,6 +100,14 @@ export default function Footer() {
                 </Link>
               </li>
 
+              <li>
+                <Link
+                  href="https://shop.xeniso.com/"
+                  className="hover:text-white"
+                >
+                  Xeniso Shop
+                </Link>
+              </li>
               <li>
                 <Link
                   href="/blog"
